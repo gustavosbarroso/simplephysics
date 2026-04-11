@@ -151,7 +151,6 @@ Many systems share the same mathematical structure:
 
 * Phase space visualization
 * Energy analysis
-* N-body gravitational systems
 
 ---
 
