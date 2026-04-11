@@ -1,6 +1,6 @@
 import numpy as np
 
-def rk4(f, t0, tf, N, r0, *args):
+def RK4(f, t0, tf, N, r0, *args):
     h = (tf - t0) / N
     t = np.linspace(t0, tf, N + 1)
     r = np.array(r0, float)
