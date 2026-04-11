@@ -1,30 +1,25 @@
-# =========================
-# ANIMAÇÃO GENÉRICA
-# =========================
-
-def init():
-    obj.set_data([], [])
-    return (obj,)
-
-
-def update(frame):
-    state = sol[frame]
-
-    # EXEMPLO: adaptar para qualquer sistema
-    # pêndulo:
-    x = L * np.sin(state[0])
-    y = -L * np.cos(state[0])
-
-    obj.set_data([0, x], [0, y])
-
-    return (obj,)
+# =========================================================
+# 🔷 7. INIT / UPDATE ANIMAÇÃO
+# =========================================================
+def init(line):
+    line.set_data([], [])
+    return (line,)
 
 
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=len(t),
-    init_func=init,
-    interval=20,
-    blit=False
-)
+def make_update(line, t, obs, hud, params):
+
+    def update(frame):
+        i = frame
+
+        line.set_data(t[:i], obs["x"][:i])
+
+        info = {
+            "x": obs["x"][i],
+            "v": obs["v"][i],
+        }
+
+        update_hud(hud, info)
+
+        return (line, hud)
+
+    return update
