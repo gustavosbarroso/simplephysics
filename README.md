@@ -167,4 +167,4 @@ Developed in Python using:
 ## 👨‍🔬 Author
 
 Gustavo Sobreira Barroso
-Physics student
+Physics Engineering student
