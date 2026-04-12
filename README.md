@@ -97,6 +97,8 @@ Run:
 python scripts/circuito_rlc.py
 ```
 
+---
+
 ### 7. Spring-mass oscillator
 Electrical analog of a damped oscillator:
 
