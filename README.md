@@ -42,7 +42,7 @@ This system is a classical example of nonlinear dynamics and chaos.
 Run:
 
 ```bash
-python scripts/pendulo_duplo.py
+python scripts/Pendulo_duplo.py
 ```
 
 ---
@@ -94,7 +94,18 @@ Lq'' + Rq' + (1/C)q = 0
 Run:
 
 ```bash
-python scripts/rlc_circuito.py
+python scripts/circuito_rlc.py
+```
+
+### 7. Spring-mass oscillator
+Electrical analog of a damped oscillator:
+
+my'' + (k/m)y' + g = 0
+
+Run:
+
+```bash
+python scripts/Massa-mola-gravidade.py
 ```
 
 ---
