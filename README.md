@@ -109,7 +109,16 @@ Run:
 ```bash
 python scripts/Massa-mola-gravidade.py
 ```
+---
+### 8. RC Circuit
+“RC is analogous to a damped oscillator in the overdamped, zero-inertia limit”
+q' + (1/RC)q = 0
 
+Run:
+
+```bash
+python scripts/circuito_rc.py
+```
 ---
 
 ## ▶️ How to Run
