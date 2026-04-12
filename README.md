@@ -100,7 +100,7 @@ python scripts/circuito_rlc.py
 ---
 
 ### 7. Spring-mass oscillator
-Electrical analog of a damped oscillator:
+Spring-mass oscillator under gravity:
 
 my'' + (k/m)y' + g = 0
 
