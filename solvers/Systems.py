@@ -1,3 +1,12 @@
+import matplotlib
+matplotlib.use('TkAgg')
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation
+from matplotlib.widgets import Slider
+from matplotlib.patches import Rectangle, Circle
+
 #exemplo de sistema mecânico qualquer
 def f(r, t):
     theta, omega, x, v = r
