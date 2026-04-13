@@ -20,26 +20,27 @@ A = 1.0
 w = 2.0
 
 # ---------------------------
-# SISTEMA
+# SISTEMA (FORMA MATRICIAL)
 # ---------------------------
 def f(r, t):
     theta, omega, x, v = r
 
     F = A * np.cos(w * t)
 
-    a11 = l
-    a12 = -np.cos(theta)
+    # matriz do sistema
+    A_mat = np.array([
+        [l, -np.cos(theta)],
+        [-m*l*np.cos(theta), (M + m)]
+    ])
 
-    a21 = -m * l * np.cos(theta)
-    a22 = (M + m)
+    # vetor independente
+    b_vec = np.array([
+        -g * np.sin(theta) - (b/(m*l)) * omega,
+        F - m*l*(omega**2)*np.sin(theta)
+    ])
 
-    b1 = -g * np.sin(theta) - (b/(m*l)) * omega
-    b2 = F - m*l*(omega**2)*np.sin(theta)
-
-    det = a11*a22 - a12*a21
-
-    a_theta = (b1*a22 - a12*b2) / det
-    a_x = (a11*b2 - b1*a21) / det
+    # resolve sistema linear
+    a_theta, a_x = np.linalg.solve(A_mat, b_vec)
 
     return np.array([omega, a_theta, v, a_x], float)
 
@@ -163,9 +164,7 @@ def update(frame):
     line_x.set_data(tp[:i], x[:i])
     line_omega.set_data(tp[:i], om[:i])
 
-    # ---------------------------
-    # ESCALA DINÂMICA 🔥
-    # ---------------------------
+    # escala dinâmica
     if i > 10:
         ymin = min(np.min(th[:i]), np.min(x[:i]), np.min(om[:i]))
         ymax = max(np.max(th[:i]), np.max(x[:i]), np.max(om[:i]))
@@ -175,7 +174,6 @@ def update(frame):
             ymin -= 1
 
         margin = 0.2 * (ymax - ymin)
-
         ax_plot.set_ylim(ymin - margin, ymax + margin)
 
     return cart, wheel1, wheel2, rod, mass, line_theta, line_x, line_omega
