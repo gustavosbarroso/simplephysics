@@ -20,21 +20,19 @@ A = 1.0
 w = 2.0
 
 # ---------------------------
-# SISTEMA (PÊNDULO INVERTIDO)
+# SISTEMA
 # ---------------------------
 def f(r, t):
     theta, omega, x, v = r
 
     F = A * np.cos(w * t)
 
-    # coeficientes
     a11 = l
     a12 = -np.cos(theta)
 
     a21 = -m * l * np.cos(theta)
     a22 = (M + m)
 
-    # lado direito (gravidade corrigida)
     b1 = -g * np.sin(theta) - (b/(m*l)) * omega
     b2 = F - m*l*(omega**2)*np.sin(theta)
 
@@ -82,7 +80,7 @@ def solve(theta0, omega0, x0, v0):
     yb = np.zeros_like(x)
 
     xp = xb + l * np.sin(th)
-    yp = yb + 0.3 + l * np.cos(th)  # invertido (para cima)
+    yp = yb + 0.3 + l * np.cos(th)
 
     return tp, th, om, x, v, xb, yb, xp, yp
 
@@ -90,11 +88,8 @@ def solve(theta0, omega0, x0, v0):
 # INICIAIS
 # ---------------------------
 theta0 = 0.1
-omega0 = 0
-x0 = 0
-v0 = 0
 
-tp, th, om, x, v, xb, yb, xp, yp = solve(theta0, omega0, x0, v0)
+tp, th, om, x, v, xb, yb, xp, yp = solve(theta0, 0, 0, 0)
 
 # ---------------------------
 # FIGURA
@@ -113,11 +108,9 @@ cart_width = 0.6
 cart_height = 0.3
 cart = Rectangle((0,0), cart_width, cart_height, fc='black')
 
-# rodas
 wheel1 = Circle((0,0), 0.1, fc='gray')
 wheel2 = Circle((0,0), 0.1, fc='gray')
 
-# pêndulo
 rod, = ax_sys.plot([], [], 'r-', lw=2)
 mass = Circle((0,0), 0.1, fc='blue')
 
@@ -126,7 +119,7 @@ ax_sys.add_patch(wheel1)
 ax_sys.add_patch(wheel2)
 ax_sys.add_patch(mass)
 
-# gráficos
+# gráfico
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
@@ -170,6 +163,21 @@ def update(frame):
     line_x.set_data(tp[:i], x[:i])
     line_omega.set_data(tp[:i], om[:i])
 
+    # ---------------------------
+    # ESCALA DINÂMICA 🔥
+    # ---------------------------
+    if i > 10:
+        ymin = min(np.min(th[:i]), np.min(x[:i]), np.min(om[:i]))
+        ymax = max(np.max(th[:i]), np.max(x[:i]), np.max(om[:i]))
+
+        if abs(ymax - ymin) < 1e-6:
+            ymax += 1
+            ymin -= 1
+
+        margin = 0.2 * (ymax - ymin)
+
+        ax_plot.set_ylim(ymin - margin, ymax + margin)
+
     return cart, wheel1, wheel2, rod, mass, line_theta, line_x, line_omega
 
 ani = FuncAnimation(
@@ -181,14 +189,8 @@ ani = FuncAnimation(
     blit=False
 )
 
-# ajustar limites dinâmicos
-ax_plot.set_ylim(
-    min(np.min(th), np.min(x), np.min(om)),
-    max(np.max(th), np.max(x), np.max(om))
-)
-
 # ---------------------------
-# SLIDERS (SI)
+# SLIDERS
 # ---------------------------
 ax_A = plt.axes([0.25, 0.35, 0.65, 0.03])
 ax_w = plt.axes([0.25, 0.30, 0.65, 0.03])
