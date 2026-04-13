@@ -121,6 +121,18 @@ Run:
 python scripts/circuito_rc.py
 ```
 ---
+### 9. Inverted Pendulum
+Fundamental to control theory, this simulation shows the dynamics envolved in a pendulum with mass m and lenght l connected to a motor with mass M, described by the following equations:
+
+lθ" - x"cos(θ) - gsin(θ)=-(b/ml)θ'
+(M + m)x" -mlθ"cos(θ) + ml$θ'^2$sin(θ)=F(t)=Acos(wt)
+
+Run:
+
+```bash
+python scripts/Pendulo_invertido.py
+```
+---
 
 ## ▶️ How to Run
 
