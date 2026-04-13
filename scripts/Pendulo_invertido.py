@@ -16,33 +16,31 @@ M = 2.0
 l = 1.0
 b = 0.1
 
-A = 1.0
+A = 0.0
 w = 2.0
 
 # ---------------------------
 # SISTEMA (FORMA MATRICIAL)
 # ---------------------------
 def f(r, t):
-    theta, omega, x, v = r
+    theta, omega, xpos, vel = r
 
     F = A * np.cos(w * t)
 
-    # matriz do sistema
     A_mat = np.array([
         [l, -np.cos(theta)],
         [-m*l*np.cos(theta), (M + m)]
     ])
 
-    # vetor independente
+    # 🔥 CORREÇÃO PRINCIPAL: sinal da gravidade
     b_vec = np.array([
-        -g * np.sin(theta) - (b/(m*l)) * omega,
+        +g * np.sin(theta) - (b/(m*l)) * omega,
         F - m*l*(omega**2)*np.sin(theta)
     ])
 
-    # resolve sistema linear
     a_theta, a_x = np.linalg.solve(A_mat, b_vec)
 
-    return np.array([omega, a_theta, v, a_x], float)
+    return np.array([omega, a_theta, vel, a_x], float)
 
 # ---------------------------
 # RK4
@@ -88,7 +86,7 @@ def solve(theta0, omega0, x0, v0):
 # ---------------------------
 # INICIAIS
 # ---------------------------
-theta0 = 0.1
+theta0 = 0.05
 
 tp, th, om, x, v, xb, yb, xp, yp = solve(theta0, 0, 0, 0)
 
@@ -209,7 +207,7 @@ slider_t0 = Slider(ax_t0, 'θ₀ [rad]', -np.pi, np.pi, valinit=theta0)
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
-def update_sliders(val):
+def update_sliders(_):
     global A, w, b, M, m, l
     global tp, th, om, x, v, xb, yb, xp, yp
 
