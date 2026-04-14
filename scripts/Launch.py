@@ -5,112 +5,83 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
+from matplotlib.ticker import ScalarFormatter
 
 # ---------------------------
-# CONSTANTES
+# CONSTANTE
 # ---------------------------
 g = 9.81  # m/s²
 
 # ---------------------------
 # PARÂMETROS INICIAIS
 # ---------------------------
-v0 = 20.0          # m/s
-theta0_deg = 45.0  # graus
+v0 = 20.0
+theta0_deg = 45.0
 theta0 = np.deg2rad(theta0_deg)
 
-k = 0.02           # arrasto
-m = 1.0            # kg
-
 # ---------------------------
-# DINÂMICA
+# SOLUÇÃO ANALÍTICA
 # ---------------------------
-def f(r, t):
-    x, y, vx, vy = r
+def solve(v0, theta):
+    vx0 = v0 * np.cos(theta)
+    vy0 = v0 * np.sin(theta)
 
-    v = np.sqrt(vx**2 + vy**2)
+    # CORREÇÃO DE PONTO FLUTUANTE
+    if abs(vx0) < 1e-12:
+        vx0 = 0.0
 
-    ax = -(k/m) * v * vx
-    ay = -g - (k/m) * v * vy
+    if abs(vy0) < 1e-12:
+        vy0 = 0.0
 
-    return np.array([vx, vy, ax, ay], float)
+    # tempo de voo
+    if vy0 == 0:
+        T = 5
+    else:
+        T = 2 * vy0 / g
 
-# ---------------------------
-# RK4
-# ---------------------------
-def RK4(f, a, b, N, r0):
-    h = (b - a) / N
-    tp = np.linspace(a, b, N + 1)
+    tp = np.linspace(0, T, 500)
 
-    r = np.array(r0, float)
+    x = vx0 * tp
+    y = vy0 * tp - 0.5 * g * tp**2
 
-    x_list, y_list, vx_list, vy_list = [r[0]], [r[1]], [r[2]], [r[3]]
-
-    for i in range(N):
-        t = tp[i]
-
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
-
-        r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
-
-        x_list.append(r[0])
-        y_list.append(r[1])
-        vx_list.append(r[2])
-        vy_list.append(r[3])
-
-        if r[1] < 0:
-            break
-
-    return (tp[:len(x_list)],
-            np.array(x_list),
-            np.array(y_list),
-            np.array(vx_list),
-            np.array(vy_list))
-
-# ---------------------------
-# SOLVER
-# ---------------------------
-def solve(v0, theta0_rad, k):
-    vx0 = v0 * np.cos(theta0_rad)
-    vy0 = v0 * np.sin(theta0_rad)
-
-    tp, x, y, vx, vy = RK4(f, 0, 10, 500, [0, 0, vx0, vy0])
+    vx = np.full_like(tp, vx0)
+    vy = vy0 - g * tp
 
     return tp, x, y, vx, vy
 
 # ---------------------------
 # INICIAL
 # ---------------------------
-tp, x, y, vx, vy = solve(v0, theta0, k)
+tp, x, y, vx, vy = solve(v0, theta0)
 
 # ---------------------------
 # FIGURA
 # ---------------------------
-fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12, 5))
+fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.35)
 
 # ---------------------------
 # SISTEMA
 # ---------------------------
-ax_sys.set_xlim(0, 50)
-ax_sys.set_ylim(0, 25)
 ax_sys.set_title("Lançamento oblíquo")
 ax_sys.set_xlabel("x [m]")
 ax_sys.set_ylabel("y [m]")
+
+# remover notação científica feia
+ax_sys.xaxis.set_major_formatter(ScalarFormatter())
+ax_sys.ticklabel_format(style='plain', axis='x')
 
 traj_line, = ax_sys.plot([], [], lw=2)
 point, = ax_sys.plot([], [], 'ro')
 
 # ---------------------------
-# GRÁFICOS TEMPORAIS
+# GRÁFICO
 # ---------------------------
-ax_plot.set_title("Velocidades e altura")
+ax_plot.set_title("y(t), vx(t), vy(t)")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("valores")
+ax_plot.set_ylabel("Valores (m e m/s)")
 
-line_y, = ax_plot.plot([], [], label="y(t) [m]")
+line_y,  = ax_plot.plot([], [], label="y(t) [m]")
 line_vx, = ax_plot.plot([], [], label="vx(t) [m/s]")
 line_vy, = ax_plot.plot([], [], label="vy(t) [m/s]")
 
@@ -137,39 +108,43 @@ def update(frame):
             np.max(np.abs(vy[:i])),
             np.max(y[:i])
         )
-        ax_plot.set_ylim(-ymax * 1.2, ymax * 1.2)
+        ax_plot.set_ylim(-ymax*1.2, ymax*1.2)
+
+    # ajuste automático do sistema
+    xmax = max(x)
+    ymax_sys = max(y)
+
+    if xmax < 1e-10:
+        ax_sys.set_xlim(-1, 1)  # lançamento vertical
+    else:
+        ax_sys.set_xlim(0, xmax*1.2)
+
+    ax_sys.set_ylim(0, ymax_sys*1.2 if ymax_sys > 0 else 1)
 
     return traj_line, point, line_y, line_vx, line_vy
 
-ani = FuncAnimation(fig, update, frames=len(tp), interval=20, blit=False)
+ani = FuncAnimation(fig, update, frames=range(0, len(tp), 3), interval=10)
 
 # ---------------------------
 # SLIDERS
 # ---------------------------
 ax_v0 = plt.axes([0.25, 0.25, 0.65, 0.03])
 ax_theta = plt.axes([0.25, 0.20, 0.65, 0.03])
-ax_k = plt.axes([0.25, 0.15, 0.65, 0.03])
-ax_m = plt.axes([0.25, 0.10, 0.65, 0.03])
 
 slider_v0 = Slider(ax_v0, 'v0 [m/s]', 0, 50, valinit=v0)
-slider_theta = Slider(ax_theta, 'θ0 [deg]', 0, 90, valinit=theta0_deg)
-slider_k = Slider(ax_k, 'k [kg/m]', 0, 0.5, valinit=k)
-slider_m = Slider(ax_m, 'm [kg]', 0.1, 5.0, valinit=m)
+slider_theta = Slider(ax_theta, 'θ0 [°]', 0, 90, valinit=theta0_deg)
 
 # ---------------------------
-# UPDATE
+# UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global v0, theta0, k, m
+    global v0, theta0
     global tp, x, y, vx, vy
 
     v0 = slider_v0.val
-    theta0_deg = slider_theta.val
-    theta0 = np.deg2rad(theta0_deg)
-    k = slider_k.val
-    m = slider_m.val
+    theta0 = np.deg2rad(slider_theta.val)
 
-    tp, x, y, vx, vy = solve(v0, theta0, k)
+    tp, x, y, vx, vy = solve(v0, theta0)
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
@@ -179,7 +154,5 @@ def update_sliders(_):
 
 slider_v0.on_changed(update_sliders)
 slider_theta.on_changed(update_sliders)
-slider_k.on_changed(update_sliders)
-slider_m.on_changed(update_sliders)
 
 plt.show()
