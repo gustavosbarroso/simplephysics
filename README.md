@@ -35,9 +35,17 @@ python scripts/pendulo_amortecido.py
 
 ### 2. Double Pendulum (Chaotic System)
 
-Simulation of a double pendulum using RK4.
+The double pendulum is a classical nonlinear system exhibiting chaotic behavior.
 
-This system is a classical example of nonlinear dynamics and chaos.
+The equations of motion are:
+
+θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂)
+    - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]
+    / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
+
+θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁)
+    + θ₂'²L₂m₂cos(θ₁ - θ₂)) ]
+    / [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
 
 Run:
 
@@ -75,7 +83,12 @@ python scripts/cadeia_interferencia.py
 
 ### 5. Gravitational Two-Body Problem
 
-Simulation of two bodies interacting under Newtonian gravity.
+Two bodies interacting via Newtonian gravity:
+
+r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
+r₂'' = G m₁ (r₁ − r₂) / |r₁ − r₂|³
+
+This system conserves total energy and angular momentum.
 
 Run:
 
@@ -99,88 +112,72 @@ python scripts/circuito_rlc.py
 
 ---
 
-### 7. Spring-mass oscillator
-Spring-mass oscillator under gravity:
+### 7. Spring-Mass Oscillator (with Gravity)
 
-my'' + (k/m)y' + g = 0
+Mass-spring system under gravity:
+
+m y'' + k y = mg
 
 Run:
 
 ```bash
 python scripts/Massa-mola-gravidade.py
 ```
----
-### 8. RC Circuit
-“RC is analogous to a damped oscillator in the overdamped, zero-inertia limit”:
 
-q' + (1/RC)q = 0
+---
+
+### 8. RC Circuit
+
+First-order system analogous to an overdamped oscillator:
+
+q' + (1/RC) q = 0
 
 Run:
 
 ```bash
 python scripts/circuito_rc.py
 ```
+
 ---
+
 ### 9. Inverted Pendulum
 
 Fundamental to control theory, this simulation describes the dynamics of an inverted pendulum of mass *m* and length *l* mounted on a cart of mass *M*, driven by an external force.
-
-The system is governed by the coupled nonlinear equations:
 
 lθ'' − x''cos(θ) − g sin(θ) = −(b/(m l)) θ'
 
 (M + m)x'' − m l θ''cos(θ) + m l (θ')² sin(θ) = F(t) = A cos(ωt)
 
-This system captures the interaction between translational and rotational motion, and is a classical example in stability analysis and feedback control.
-
 Run:
 
 ```bash
 python scripts/Pendulo_invertido.py
+```
+
 ---
 
 ### 10. Driven Pendulum on Oscillating Cart
 
-Simulation of a pendulum attached to a cart undergoing a prescribed harmonic motion:
+Pendulum attached to a cart with prescribed motion:
 
 x(t) = A cos(ωt)
 
-The pendulum dynamics is modeled by the nonlinear, driven differential equation:
-
-θ'' = - (g/L) sin(θ) + (A/L) cos(θ) cos(ωt) - b θ'
-
-This represents a pendulum in a non-inertial reference frame, where the cart motion acts as an external periodic driving force.
-
-Features:
-
-* Nonlinear dynamics
-* External periodic forcing
-* Optional damping
-* Real-time visualization with moving cart and pendulum
-* Interactive control of A, ω, b and initial conditions
+θ'' = −(g/L) sin(θ) + (A/L) cos(θ) cos(ωt) − b θ'
 
 Run:
 
 ```bash
-python scripts/Driven_cart_pendulum.py
-## ▶️ How to Run
+python scripts/pendulo_carrinho_forcado.py
+```
 
-### 1. Clone the repository
+---
+
+## ▶️ How to Run
 
 ```bash
 git clone https://github.com/gustavosbarroso/simplephysics.git
 cd simplephysics
-```
-
-### 2. Install dependencies
-
-```bash
 pip install -r requirements.txt
-```
-
-### 3. Run any simulation
-
-```bash
 python scripts/<script_name>.py
 ```
 
@@ -194,33 +191,33 @@ All simulations include sliders for real-time adjustment of physical parameters 
 
 ## 🧠 Approach
 
-* Physical systems are modeled as ODEs
-* Higher-order equations are rewritten as first-order systems
-* Numerical integration is performed using RK4 or adaptive methods
-* Results are visualized dynamically
+* Systems modeled as ODEs
+* Conversion to first-order systems
+* Numerical integration via RK4
+* Dynamic visualization
 
 ---
 
 ## 🔗 Physical Connections
 
-Many systems share the same mathematical structure:
-
-* Mechanical oscillators (pendulum)
-* Electrical circuits (RLC)
-* Coupled systems (mass chains)
+* Mechanical oscillators
+* Electrical circuits
+* Nonlinear dynamics
+* Chaotic systems
 
 ---
 
 ## 🚀 Future Improvements
 
 * Phase space visualization
-* Energy analysis
+* Energy tracking
+* Chaos diagnostics (Poincaré sections, Lyapunov exponents)
 
 ---
 
 ## 🛠️ Development
 
-Developed in Python using:
+Python, using:
 
 * NumPy
 * Matplotlib
