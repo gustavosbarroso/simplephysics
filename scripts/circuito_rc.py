@@ -47,7 +47,7 @@ def RK4(f, a, b, N, r):
     return tp, q_list, i_list
 
 def solve(q0):
-    return RK4(f, 0, 10, 1500, [q0])
+    return RK4(f, 0, 10, 500, [q0])
 
 # ---------------------------
 # INICIAIS
@@ -56,11 +56,14 @@ q0 = 1.0
 tp, q, i_vals = solve(q0)
 
 # ---------------------------
-# CIRCUITO
+# FIGURA
 # ---------------------------
 fig, (ax_circ, ax_plot) = plt.subplots(1, 2, figsize=(11,5))
 plt.subplots_adjust(bottom=0.35)
 
+# ---------------------------
+# CIRCUITO
+# ---------------------------
 ax_circ.set_xlim(0, 10)
 ax_circ.set_ylim(0, 6)
 ax_circ.axis('off')
@@ -109,14 +112,13 @@ def loop_path(s):
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
 
-# >>> CORREÇÃO IMPORTANTE AQUI <<<
 ymin = min(np.min(q), np.min(i_vals))
 ymax = max(np.max(q), np.max(i_vals))
 ax_plot.set_ylim(ymin, ymax)
 
 ax_plot.set_title("Carga e corrente (RC)")
-ax_plot.set_xlabel("t(s)")
-ax_plot.set_ylabel("q(t)-C, i(t)-A")
+ax_plot.set_xlabel("t (s)")
+ax_plot.set_ylabel("q(t) [C], i(t) [A]")
 
 line_q, = ax_plot.plot([], [], label="q(t)")
 line_i, = ax_plot.plot([], [], label="i(t)")
@@ -132,14 +134,13 @@ text_info = fig.text(
 )
 
 # ---------------------------
-# UPDATE
+# ANIMAÇÃO
 # ---------------------------
 def update(frame):
     global electron_pos
 
     i_inst = i_vals[frame]
 
-    # velocidade proporcional à corrente
     speed = 0.02 * i_inst
     electron_pos = (electron_pos + speed) % 1
 
@@ -167,18 +168,21 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=len(q), interval=20, blit=False)
 
 # ---------------------------
-# SLIDER
+# SLIDERS
 # ---------------------------
 ax_R = plt.axes([0.2, 0.2, 0.6, 0.03])
 ax_C = plt.axes([0.2, 0.15, 0.6, 0.03])
 ax_q0 = plt.axes([0.2, 0.10, 0.6, 0.03])
 
-slider_R = Slider(ax_R, 'R(Ω)', 0.1, 10, valinit=R)
-slider_C = Slider(ax_C, 'C(F)', 0.1, 5, valinit=C)
-slider_q0 = Slider(ax_q0, 'q0(C)', -2, 2, valinit=q0)
+slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=R)
+slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=C)
+slider_q0 = Slider(ax_q0, 'q0 (C)', -2, 2, valinit=q0)
 
+# ---------------------------
+# UPDATE SLIDERS
+# ---------------------------
 def update_sliders(val):
-    global R, C, q0, tp, q, i_vals
+    global R, C, q0, tp, q, i_vals, electron_pos
 
     R = slider_R.val
     C = slider_C.val
@@ -186,9 +190,17 @@ def update_sliders(val):
 
     tp, q, i_vals = solve(q0)
 
+    # reset elétrons
+    electron_pos = np.linspace(0, 1, num_e)
+
+    # ajuste de escala
     ax_plot.set_xlim(0, tp[-1])
-    ax_plot.set_ylim(min(np.min(q), np.min(i_vals)),
-                     max(np.max(q), np.max(i_vals)))
+
+    ymin = min(np.min(q), np.min(i_vals))
+    ymax = max(np.max(q), np.max(i_vals))
+    margem = 0.2 * (ymax - ymin + 1e-6)
+
+    ax_plot.set_ylim(ymin - margem, ymax + margem)
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
