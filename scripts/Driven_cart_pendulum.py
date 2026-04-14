@@ -185,11 +185,11 @@ ax_b = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 
-slider_A = Slider(ax_A, 'A', 0, 1.0, valinit=A)
-slider_w = Slider(ax_w, 'ω', 0.1, 10, valinit=w_drive)
-slider_b = Slider(ax_b, 'b', 0, 2.0, valinit=b)
-slider_theta0 = Slider(ax_theta0, 'θ₀', -np.pi, np.pi, valinit=theta0)
-slider_omega0 = Slider(ax_omega0, 'ω₀', -5, 5, valinit=omega0)
+slider_A = Slider(ax_A, 'A(m)', 0, 1.0, valinit=A)
+slider_w = Slider(ax_w, 'ω_forçado(rad/s)', 0.1, 10, valinit=w_drive)
+slider_b = Slider(ax_b, 'b(s⁻¹)', 0, 2.0, valinit=b)
+slider_theta0 = Slider(ax_theta0, 'θ₀(rad)', -np.pi, np.pi, valinit=theta0)
+slider_omega0 = Slider(ax_omega0, 'ω₀(rad)', -5, 5, valinit=omega0)
 
 # ---------------------------
 # UPDATE SLIDERS
