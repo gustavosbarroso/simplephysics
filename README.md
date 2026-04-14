@@ -163,7 +163,7 @@ x(t) = A cos(ωt)
 Run:
 
 ```bash
-python scripts/pendulo_carrinho_forcado.py
+python scripts/Driven_cart_pendulum.py
 ```
 
 ---
