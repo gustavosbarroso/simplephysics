@@ -122,18 +122,21 @@ python scripts/circuito_rc.py
 ```
 ---
 ### 9. Inverted Pendulum
-Fundamental to control theory, this simulation shows the dynamics envolved in a pendulum with mass m and lenght l connected to a motor with mass M, described by the following equations:
 
-lθ" - x"cos(θ) - gsin(θ)=-(b/ml)θ'
+Fundamental to control theory, this simulation describes the dynamics of an inverted pendulum of mass *m* and length *l* mounted on a cart of mass *M*, driven by an external force.
 
-(M + m)x" -mlθ"cos(θ) + ml(θ')²sin(θ)=F(t)=Acos(wt)
+The system is governed by the coupled nonlinear equations:
+
+lθ'' − x''cos(θ) − g sin(θ) = −(b/(m l)) θ'
+
+(M + m)x'' − m l θ''cos(θ) + m l (θ')² sin(θ) = F(t) = A cos(ωt)
+
+This system captures the interaction between translational and rotational motion, and is a classical example in stability analysis and feedback control.
 
 Run:
 
 ```bash
 python scripts/Pendulo_invertido.py
-```
----
 ---
 
 ### 10. Driven Pendulum on Oscillating Cart
