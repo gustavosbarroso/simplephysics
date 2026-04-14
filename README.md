@@ -136,20 +136,17 @@ python scripts/circuito_rc.py
 
 ---
 
-### 9. Inverted Pendulum
+### 9. Kapitiza's Pendulum
 
-Fundamental to control theory, this simulation describes the dynamics of an inverted pendulum of mass *m* and length *l* mounted on a cart of mass *M*, driven by an external force.
+Fundamental to nonlinear dynamics, this simulation describes the dynamics of a pendulum whose pivot oscillates vertically according to y(t)=Acos(vt)
 
-lθ'' − x''cos(θ) − g sin(θ) = −(b/(m l)) θ'
-
-(M + m)x'' − m l θ''cos(θ) + m l (θ')² sin(θ) = F(t) = A cos(ωt)
-
+lθ''=-gsin(θ) + Av²cos(vt)sin(θ)
 Run:
 
 ```bash
-python scripts/Pendulo_invertido.py
+python scripts/Kapitiza_pendulo.py
 ```
-
+---
 ---
 
 ### 10. Driven Pendulum on Oscillating Cart
