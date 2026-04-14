@@ -134,7 +134,32 @@ Run:
 python scripts/Pendulo_invertido.py
 ```
 ---
+---
 
+### 10. Driven Pendulum on Oscillating Cart
+
+Simulation of a pendulum attached to a cart undergoing a prescribed harmonic motion:
+
+x(t) = A cos(ωt)
+
+The pendulum dynamics is modeled by the nonlinear, driven differential equation:
+
+θ'' = - (g/L) sin(θ) + (A/L) cos(θ) cos(ωt) - b θ'
+
+This represents a pendulum in a non-inertial reference frame, where the cart motion acts as an external periodic driving force.
+
+Features:
+
+* Nonlinear dynamics
+* External periodic forcing
+* Optional damping
+* Real-time visualization with moving cart and pendulum
+* Interactive control of A, ω, b and initial conditions
+
+Run:
+
+```bash
+python scripts/Driven_cart_pendulum.py
 ## ▶️ How to Run
 
 ### 1. Clone the repository
