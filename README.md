@@ -178,9 +178,13 @@ Projectile motion in 2D with gravity and no air resistance.
 Equations of motion:
 
 x'(t) = v_x
+
 y'(t) = v_y
+
 v_x'(t) =0
+
 v_y'(t) = -g
+
 v = √(v_x² + v_y²)
 
 Run:
