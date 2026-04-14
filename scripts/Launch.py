@@ -76,7 +76,7 @@ def solve(v0, theta0_rad, k):
     vx0 = v0 * np.cos(theta0_rad)
     vy0 = v0 * np.sin(theta0_rad)
 
-    tp, x, y, vx, vy = RK4(f, 0, 10, 4000, [0, 0, vx0, vy0])
+    tp, x, y, vx, vy = RK4(f, 0, 10, 500, [0, 0, vx0, vy0])
 
     return tp, x, y, vx, vy
 
@@ -96,7 +96,7 @@ plt.subplots_adjust(left=0.25, bottom=0.35)
 # ---------------------------
 ax_sys.set_xlim(0, 50)
 ax_sys.set_ylim(0, 25)
-ax_sys.set_title("Lançamento oblíquo com resistência do ar")
+ax_sys.set_title("Lançamento oblíquo")
 ax_sys.set_xlabel("x [m]")
 ax_sys.set_ylabel("y [m]")
 
@@ -153,7 +153,7 @@ ax_m = plt.axes([0.25, 0.10, 0.65, 0.03])
 
 slider_v0 = Slider(ax_v0, 'v0 [m/s]', 0, 50, valinit=v0)
 slider_theta = Slider(ax_theta, 'θ0 [deg]', 0, 90, valinit=theta0_deg)
-slider_k = Slider(ax_k, 'k', 0, 0.2, valinit=k)
+slider_k = Slider(ax_k, 'k [kg/m]', 0, 0.5, valinit=k)
 slider_m = Slider(ax_m, 'm [kg]', 0.1, 5.0, valinit=m)
 
 # ---------------------------
