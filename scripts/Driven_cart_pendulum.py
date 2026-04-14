@@ -12,13 +12,12 @@ from matplotlib.patches import Rectangle, Circle
 # ---------------------------
 g = 9.81
 L = 0.5
-b = 0.1
 
 A = 0.3
 w_drive = 2.0
 
 # ---------------------------
-# SISTEMA
+# SISTEMA (SEM DISSIPAÇÃO)
 # ---------------------------
 def f(r, t):
     theta, omega = r
@@ -27,7 +26,6 @@ def f(r, t):
     domega = (
         -(g / L) * np.sin(theta)
         + (A / L) * np.cos(theta) * np.cos(w_drive * t)
-        - b * omega
     )
 
     return np.array([dtheta, domega], float)
@@ -77,7 +75,7 @@ tp, th, om, x_cart = solve(theta0, omega0)
 # FIGURA
 # ---------------------------
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
-plt.subplots_adjust(left=0.25, bottom=0.40)
+plt.subplots_adjust(left=0.25, bottom=0.35)
 
 # ---------------------------
 # SISTEMA VISUAL
@@ -85,7 +83,7 @@ plt.subplots_adjust(left=0.25, bottom=0.40)
 ax_sys.set_xlim(-1.5, 1.5)
 ax_sys.set_ylim(-1.2, 1.0)
 ax_sys.set_aspect('equal')
-ax_sys.set_title("Cart + Pêndulo (com amortecimento)")
+ax_sys.set_title("Cart + Pêndulo (sem amortecimento)")
 
 ground_y = -0.5
 ax_sys.plot([-2, 2], [ground_y, ground_y], lw=3)
@@ -179,46 +177,15 @@ ani = FuncAnimation(
 # ---------------------------
 # SLIDERS
 # ---------------------------
-ax_A = plt.axes([0.25, 0.30, 0.65, 0.03])
-ax_w = plt.axes([0.25, 0.25, 0.65, 0.03])
-ax_b = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_A = plt.axes([0.25, 0.25, 0.65, 0.03])
+ax_w = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 
 slider_A = Slider(ax_A, 'A(m)', 0, 1.0, valinit=A)
 slider_w = Slider(ax_w, 'ω_forçado(rad/s)', 0.1, 10, valinit=w_drive)
-slider_b = Slider(ax_b, 'b(s⁻¹)', 0, 2.0, valinit=b)
 slider_theta0 = Slider(ax_theta0, 'θ₀(rad)', -np.pi, np.pi, valinit=theta0)
 slider_omega0 = Slider(ax_omega0, 'ω₀(rad)', -5, 5, valinit=omega0)
-
-# ---------------------------
-# UPDATE SLIDERS
-# ---------------------------
-def update_sliders(_):
-    global A, w_drive, b, theta0, omega0
-    global tp, th, om, x_cart
-
-    A = slider_A.val
-    w_drive = slider_w.val
-    b = slider_b.val
-    theta0 = slider_theta0.val
-    omega0 = slider_omega0.val
-
-    tp, th, om, x_cart = solve(theta0, omega0)
-
-    ani.event_source.stop()
-    ani.frame_seq = ani.new_frame_seq()
-    ani.event_source.start()
-
-    fig.canvas.draw_idle()
-
-slider_A.on_changed(update_sliders)
-slider_w.on_changed(update_sliders)
-slider_b.on_changed(update_sliders)
-slider_theta0.on_changed(update_sliders)
-slider_omega0.on_changed(update_sliders)
-
-plt.show()
 
 # ---------------------------
 # UPDATE SLIDERS
