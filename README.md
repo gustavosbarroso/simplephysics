@@ -158,7 +158,7 @@ Pendulum attached to a cart with prescribed motion:
 
 x(t) = A cos(ωt)
 
-θ'' = −(g/L) sin(θ) + (A/L) cos(θ) cos(ωt) − b θ'
+θ'' = −(g/L) sin(θ) + (A/L) cos(θ) cos(ωt)
 
 Run:
 
