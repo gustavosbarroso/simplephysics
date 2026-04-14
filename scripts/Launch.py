@@ -5,41 +5,97 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
-from matplotlib.ticker import ScalarFormatter
 
 # ---------------------------
 # CONSTANTE
 # ---------------------------
-g = 9.81  # m/s²
+g = 9.81
 
 # ---------------------------
-# PARÂMETROS INICIAIS
+# PARÂMETROS
 # ---------------------------
 v0 = 20.0
 theta0_deg = 45.0
 theta0 = np.deg2rad(theta0_deg)
 
+k = 0.02
+m = 1.0
+
+# 🔥 CONTROLE DE VELOCIDADE
+speed = 3  # aumente para acelerar
+
 # ---------------------------
-# SOLUÇÃO ANALÍTICA
+# DINÂMICA COM ARRASTO
 # ---------------------------
-def solve(v0, theta):
+def f_drag(r, t):
+    x, y, vx, vy = r
+    v = np.sqrt(vx**2 + vy**2)
+
+    ax = -(k/m) * v * vx
+    ay = -g - (k/m) * v * vy
+
+    return np.array([vx, vy, ax, ay], float)
+
+# ---------------------------
+# RK4
+# ---------------------------
+def RK4(f, a, b, N, r0):
+    h = (b - a) / N
+    t = a
+    r = np.array(r0, float)
+
+    tp = [t]
+    x_list, y_list, vx_list, vy_list = [r[0]], [r[1]], [r[2]], [r[3]]
+
+    for _ in range(N):
+        k1 = h * f(r, t)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h)
+        k4 = h * f(r + k3, t + h)
+
+        r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
+        t += h
+
+        tp.append(t)
+        x_list.append(r[0])
+        y_list.append(r[1])
+        vx_list.append(r[2])
+        vy_list.append(r[3])
+
+        if r[1] < 0:
+            break
+
+    return (np.array(tp),
+            np.array(x_list),
+            np.array(y_list),
+            np.array(vx_list),
+            np.array(vy_list))
+
+# ---------------------------
+# SOLUÇÃO COM ARRASTO
+# ---------------------------
+def solve_drag(v0, theta):
     vx0 = v0 * np.cos(theta)
     vy0 = v0 * np.sin(theta)
 
-    # CORREÇÃO DE PONTO FLUTUANTE
     if abs(vx0) < 1e-12:
         vx0 = 0.0
 
-    if abs(vy0) < 1e-12:
-        vy0 = 0.0
+    return RK4(f_drag, 0, 20, 600, [0, 0, vx0, vy0])
 
-    # tempo de voo
-    if vy0 == 0:
-        T = 5
-    else:
-        T = 2 * vy0 / g
+# ---------------------------
+# SOLUÇÃO IDEAL
+# ---------------------------
+def solve_ideal(v0, theta):
+    vx0 = v0 * np.cos(theta)
+    vy0 = v0 * np.sin(theta)
 
-    tp = np.linspace(0, T, 500)
+    if abs(vx0) < 1e-12:
+        vx0 = 0.0
+
+    T = 2 * vy0 / g if vy0 > 0 else 5
+
+    tp = np.linspace(0, T, 600)
 
     x = vx0 * tp
     y = vy0 * tp - 0.5 * g * tp**2
@@ -47,12 +103,17 @@ def solve(v0, theta):
     vx = np.full_like(tp, vx0)
     vy = vy0 - g * tp
 
-    return tp, x, y, vx, vy
+    idx = np.where(y >= 0)[0]
+
+    return tp[idx], x[idx], y[idx], vx[idx], vy[idx]
 
 # ---------------------------
 # INICIAL
 # ---------------------------
-tp, x, y, vx, vy = solve(v0, theta0)
+tp_d, x_d, y_d, vx_d, vy_d = solve_drag(v0, theta0)
+tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(v0, theta0)
+
+n_frames = max(len(tp_d), len(tp_i))
 
 # ---------------------------
 # FIGURA
@@ -60,30 +121,24 @@ tp, x, y, vx, vy = solve(v0, theta0)
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.35)
 
-# ---------------------------
 # SISTEMA
-# ---------------------------
-ax_sys.set_title("Lançamento oblíquo")
+ax_sys.set_title("Trajetória")
 ax_sys.set_xlabel("x [m]")
 ax_sys.set_ylabel("y [m]")
 
-# remover notação científica feia
-ax_sys.xaxis.set_major_formatter(ScalarFormatter())
-ax_sys.ticklabel_format(style='plain', axis='x')
-
-traj_line, = ax_sys.plot([], [], lw=2)
+traj_drag, = ax_sys.plot([], [], 'r-', label="Com arrasto")
+traj_ideal, = ax_sys.plot([], [], 'b--', label="Sem arrasto")
 point, = ax_sys.plot([], [], 'ro')
 
-# ---------------------------
-# GRÁFICO
-# ---------------------------
-ax_plot.set_title("y(t), vx(t), vy(t)")
-ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("Valores (m e m/s)")
+ax_sys.legend()
 
-line_y,  = ax_plot.plot([], [], label="y(t) [m]")
-line_vx, = ax_plot.plot([], [], label="vx(t) [m/s]")
-line_vy, = ax_plot.plot([], [], label="vy(t) [m/s]")
+# GRÁFICO
+ax_plot.set_title("y(t)")
+ax_plot.set_xlabel("t [s]")
+ax_plot.set_ylabel("y [m]")
+
+line_y_drag, = ax_plot.plot([], [], 'r-', label="Com arrasto")
+line_y_ideal, = ax_plot.plot([], [], 'b--', label="Sem arrasto")
 
 ax_plot.legend()
 
@@ -91,68 +146,74 @@ ax_plot.legend()
 # ANIMAÇÃO
 # ---------------------------
 def update(frame):
-    i = frame
+    i = min(frame * speed, n_frames - 1)
 
-    traj_line.set_data(x[:i], y[:i])
-    point.set_data([x[i]], [y[i]])
+    fator_d = len(tp_d) / n_frames
+    fator_i = len(tp_i) / n_frames
 
-    line_y.set_data(tp[:i], y[:i])
-    line_vx.set_data(tp[:i], vx[:i])
-    line_vy.set_data(tp[:i], vy[:i])
+    i_d = min(int(i * fator_d), len(tp_d)-1)
+    i_i = min(int(i * fator_i), len(tp_i)-1)
 
-    ax_plot.set_xlim(0, tp[-1])
+    traj_drag.set_data(x_d[:i_d], y_d[:i_d])
+    traj_ideal.set_data(x_i[:i_i], y_i[:i_i])
 
-    if i > 5:
-        ymax = max(
-            np.max(np.abs(vx[:i])),
-            np.max(np.abs(vy[:i])),
-            np.max(y[:i])
-        )
-        ax_plot.set_ylim(-ymax*1.2, ymax*1.2)
+    point.set_data([x_d[i_d]], [y_d[i_d]])
 
-    # ajuste automático do sistema
-    xmax = max(x)
-    ymax_sys = max(y)
+    line_y_drag.set_data(tp_d[:i_d], y_d[:i_d])
+    line_y_ideal.set_data(tp_i[:i_i], y_i[:i_i])
 
-    if xmax < 1e-10:
-        ax_sys.set_xlim(-1, 1)  # lançamento vertical
-    else:
-        ax_sys.set_xlim(0, xmax*1.2)
+    ax_plot.set_xlim(0, max(tp_d[-1], tp_i[-1]))
+    ymax = max(np.max(y_d), np.max(y_i))
+    ax_plot.set_ylim(0, ymax*1.2)
 
-    ax_sys.set_ylim(0, ymax_sys*1.2 if ymax_sys > 0 else 1)
+    xmax = max(np.max(x_d), np.max(x_i))
+    ax_sys.set_xlim(0, xmax*1.2 if xmax > 1e-10 else 1)
+    ax_sys.set_ylim(0, ymax*1.2)
 
-    return traj_line, point, line_y, line_vx, line_vy
+    return traj_drag, traj_ideal, point, line_y_drag, line_y_ideal
 
-ani = FuncAnimation(fig, update, frames=range(0, len(tp), 3), interval=10)
+ani = FuncAnimation(fig, update, frames=n_frames, interval=8)
 
 # ---------------------------
 # SLIDERS
 # ---------------------------
 ax_v0 = plt.axes([0.25, 0.25, 0.65, 0.03])
 ax_theta = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_k = plt.axes([0.25, 0.15, 0.65, 0.03])
+ax_m = plt.axes([0.25, 0.10, 0.65, 0.03])
 
 slider_v0 = Slider(ax_v0, 'v0 [m/s]', 0, 50, valinit=v0)
-slider_theta = Slider(ax_theta, 'θ0 [°]', 0, 90, valinit=theta0_deg)
+slider_theta = Slider(ax_theta, 'θ [°]', 0, 90, valinit=theta0_deg)
+slider_k = Slider(ax_k, 'k[kg/m]', 0, 0.1, valinit=k)
+slider_m = Slider(ax_m, 'm [kg]', 0.1, 5, valinit=m)
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global v0, theta0
-    global tp, x, y, vx, vy
+    global v0, theta0, k, m
+    global tp_d, x_d, y_d, vx_d, vy_d
+    global tp_i, x_i, y_i, vx_i, vy_i
+    global n_frames, ani
 
     v0 = slider_v0.val
     theta0 = np.deg2rad(slider_theta.val)
+    k = slider_k.val
+    m = slider_m.val
 
-    tp, x, y, vx, vy = solve(v0, theta0)
+    tp_d, x_d, y_d, vx_d, vy_d = solve_drag(v0, theta0)
+    tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(v0, theta0)
+
+    n_frames = max(len(tp_d), len(tp_i))
 
     ani.event_source.stop()
-    ani.frame_seq = ani.new_frame_seq()
-    ani.event_source.start()
+    ani = FuncAnimation(fig, update, frames=n_frames, interval=8)
 
     fig.canvas.draw_idle()
 
 slider_v0.on_changed(update_sliders)
 slider_theta.on_changed(update_sliders)
+slider_k.on_changed(update_sliders)
+slider_m.on_changed(update_sliders)
 
 plt.show()
