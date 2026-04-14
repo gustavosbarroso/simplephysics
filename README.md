@@ -140,7 +140,7 @@ python scripts/circuito_rc.py
 
 Fundamental to nonlinear dynamics, this simulation describes the dynamics of a pendulum whose pivot oscillates vertically according to y(t)=Acos(vt)
 
-lθ''=-gsin(θ) + Av²cos(vt)sin(θ)
+Lθ''=-gsin(θ) + Av²cos(vt)sin(θ)
 
 Run:
 
