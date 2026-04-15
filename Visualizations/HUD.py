@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.widgets import Slider
 # =========================================================
-# 🔷 5. HUD
+# 🔷 6. HUD
 # =========================================================
 def make_hud(fig):
     return fig.text(
