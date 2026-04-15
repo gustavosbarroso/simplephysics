@@ -49,7 +49,7 @@ def RK4(f, a, b_int, N, r):
 # SOLVER
 # ---------------------------
 def solve(theta0, omega0):
-    tp, th, om = RK4(f, 0, 10, 1000, [theta0, omega0])
+    tp, th, om = RK4(f, 0, 10, 500, [theta0, omega0])
     x = L * np.sin(th)
     y = -L * np.cos(th)
     return tp, th, om, x, y
@@ -59,7 +59,7 @@ def solve(theta0, omega0):
 # ---------------------------
 def classify_regime():
     if abs(b) < 1e-6:
-        return "Pêndulo simples"  # Caso sem amortecimento
+        return "Pêndulo simples"
     delta = b**2 - 4*(g/L)
 
     if abs(delta) < 1e-3:
@@ -80,7 +80,7 @@ tp, th, om, x, y = solve(theta0, omega0)
 # ---------------------------
 # FIGURA
 # ---------------------------
-fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(11,5))
+fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(11, 5))
 plt.subplots_adjust(left=0.25, bottom=0.35)
 
 # ---------------------------
@@ -97,10 +97,7 @@ line, = ax_pend.plot([], [], 'o-', lw=2)
 # GRÁFICO
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
-
-ymin = min(np.min(th), np.min(om))
-ymax = max(np.max(th), np.max(om))
-ax_plot.set_ylim(ymin, ymax)
+ax_plot.set_ylim(-1, 1)
 
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
@@ -111,7 +108,7 @@ line_om, = ax_plot.plot([], [], label="ω(t)")
 ax_plot.legend()
 
 # ---------------------------
-# HUD (FORA)
+# HUD
 # ---------------------------
 text_info = fig.text(
     0.02, 0.65,
@@ -139,6 +136,30 @@ def update(frame):
     # gráficos
     line_th.set_data(tp[:i], th[:i])
     line_om.set_data(tp[:i], om[:i])
+
+    # ---------------------------
+    # ESCALA DINÂMICA (ESTÁVEL)
+    # ---------------------------
+    if i > 5:
+        data_min = min(
+            np.min(th[:i]),
+            np.min(om[:i])
+        )
+        data_max = max(
+            np.max(th[:i]),
+            np.max(om[:i])
+        )
+
+        if abs(data_max - data_min) < 1e-6:
+            data_max += 1
+            data_min -= 1
+
+        margin = 0.2 * (data_max - data_min)
+
+        ax_plot.set_ylim(
+            data_min - margin,
+            data_max + margin
+        )
 
     regime = classify_regime()
 
@@ -198,8 +219,6 @@ def update_sliders(val):
     omega0 = slider_omega0.val
 
     tp, th, om, x, y = solve(theta0, omega0)
-
-    line.set_data([0, x[0]], [0, y[0]])
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
