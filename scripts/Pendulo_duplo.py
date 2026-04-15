@@ -76,7 +76,7 @@ def RK4(f, a, b, N, r):
 # ---------------------------
 def solve(theta1_0, omega1_0, theta2_0, omega2_0):
     tp, th1, om1, th2, om2 = RK4(
-        f, 0, 10, 1500,
+        f, 0, 10, 500,
         [theta1_0, omega1_0, theta2_0, omega2_0]
     )
 
@@ -110,12 +110,11 @@ ax_pend.set_title("Pêndulo Duplo")
 
 line, = ax_pend.plot([], [], 'o-', lw=2)
 
-# Gráficos
+# ---------------------------
+# GRÁFICO (ESCALA DINÂMICA)
+# ---------------------------
 ax_plot.set_xlim(0, tp[-1])
-
-ymin = min(np.min(th1), np.min(om1), np.min(th2), np.min(om2))
-ymax = max(np.max(th1), np.max(om1), np.max(th2), np.max(om2))
-ax_plot.set_ylim(ymin, ymax)
+ax_plot.set_ylim(-1, 1)
 
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
@@ -128,7 +127,9 @@ line_om2, = ax_plot.plot([], [], label="ω2(t)")
 
 ax_plot.legend()
 
+# ---------------------------
 # HUD
+# ---------------------------
 text_info = fig.text(
     0.02, 0.55,
     "",
@@ -136,12 +137,16 @@ text_info = fig.text(
     bbox=dict(boxstyle="round", facecolor="white", alpha=0.8)
 )
 
+# ---------------------------
 # INIT
+# ---------------------------
 def init():
     line.set_data([0, x1[0], x2[0]], [0, y1[0], y2[0]])
     return line,
 
+# ---------------------------
 # UPDATE
+# ---------------------------
 def update(frame):
     i = frame
 
@@ -152,7 +157,36 @@ def update(frame):
     line_th2.set_data(tp[:i], th2[:i])
     line_om2.set_data(tp[:i], om2[:i])
 
-    texto = (
+    # ---------------------------
+    # ESCALA DINÂMICA
+    # ---------------------------
+    if i > 5:
+        data_min = min(
+            np.min(th1[:i]),
+            np.min(th2[:i]),
+            np.min(om1[:i]),
+            np.min(om2[:i])
+        )
+
+        data_max = max(
+            np.max(th1[:i]),
+            np.max(th2[:i]),
+            np.max(om1[:i]),
+            np.max(om2[:i])
+        )
+
+        if abs(data_max - data_min) < 1e-6:
+            data_min -= 1
+            data_max += 1
+
+        margin = 0.2 * (data_max - data_min)
+
+        ax_plot.set_ylim(
+            data_min - margin,
+            data_max + margin
+        )
+
+    text_info.set_text(
         f"m1 = {m1:.2f} kg\n"
         f"m2 = {m2:.2f} kg\n"
         f"L1 = {L1:.2f} m\n"
@@ -166,8 +200,6 @@ def update(frame):
         f"ω2 = {om2[i]:.2f} rad/s\n\n"
         f"t = {tp[i]:.2f} s"
     )
-
-    text_info.set_text(texto)
 
     return line, line_th1, line_om1, line_th2, line_om2, text_info
 
