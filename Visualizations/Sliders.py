@@ -5,23 +5,13 @@ def make_slider(ax, label, vmin, vmax, valinit):
     return Slider(ax, label, vmin, vmax, valinit=valinit)
 
 
-def rebuild(val):
-    global t, sol, obs, ani
-
-    t, sol, obs = solve(params)
-
-    ani.event_source.stop()
-    ani.frame_seq = ani.new_frame_seq()
-    ani.event_source.start()
-
-    fig.canvas.draw_idle()
 # =========================================================
 # 🔷 9. MAIN
 # =========================================================
 if __name__ == "__main__":
 
     # ---------------------------
-    # PARÂMETROS (ALTERA AQUI)
+    # PARÂMETROS
     # ---------------------------
     params = {
         "k": 10.0,
@@ -45,19 +35,20 @@ if __name__ == "__main__":
     # ---------------------------
     # ANIMAÇÃO
     # ---------------------------
-    update = make_update(line, t, obs, hud, params)
+    update = make_update(line, t, obs, hud, params, ax)
 
     ani = FuncAnimation(
         fig,
         update,
         frames=len(t),
-        init_func=lambda: init(line),
+        init_func=lambda: line.set_data([], []),
         interval=20,
-        blit=False
+        blit=False,
+        cache_frame_data=False
     )
 
     # ---------------------------
-    # SLIDERS (EXEMPLO)
+    # SLIDERS
     # ---------------------------
     ax_k = plt.axes([0.25, 0.2, 0.65, 0.03])
     ax_m = plt.axes([0.25, 0.1, 0.65, 0.03])
@@ -65,10 +56,20 @@ if __name__ == "__main__":
     slider_k = make_slider(ax_k, "k", 1, 50, params["k"])
     slider_m = make_slider(ax_m, "m", 0.1, 5, params["m"])
 
+    def rebuild(val):
+        global t, sol, obs, ani
+
+        t, sol, obs = solve(params)
+
+        ani.event_source.stop()
+        ani.frame_seq = ani.new_frame_seq()
+        ani.event_source.start()
+
+        fig.canvas.draw_idle()
+
     def update_sliders(val):
         params["k"] = slider_k.val
         params["m"] = slider_m.val
-
         rebuild(val)
 
     slider_k.on_changed(update_sliders)
