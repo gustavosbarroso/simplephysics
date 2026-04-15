@@ -171,7 +171,7 @@ python scripts/Driven_cart_pendulum.py
 
 ---
 ---
-**###11. Projectile Motion with Air Resistance**
+### **11. Projectile Motion with Air Resistance**
 
 Projectile motion in 2D with gravity and quadratic air resistance proportional to the velocity magnitude.
 
