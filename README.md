@@ -171,9 +171,9 @@ python scripts/Driven_cart_pendulum.py
 
 ---
 ---
-### 11. Projectile Motion with Air Resistance
+**###11. Projectile Motion with Air Resistance**
 
-Projectile motion in 2D with gravity and no air resistance.
+Projectile motion in 2D with gravity and quadratic air resistance proportional to the velocity magnitude.
 
 Equations of motion:
 
@@ -181,9 +181,9 @@ x'(t) = v_x
 
 y'(t) = v_y
 
-v_x'(t) =0
+v_x'(t) = -(k/m) · v · v_x
 
-v_y'(t) = -g
+v_y'(t) = -g -(k/m) · v · v_y
 
 v = √(v_x² + v_y²)
 
