@@ -23,10 +23,12 @@ omega = 2.0
 # CLASSIFICAÇÃO
 # ---------------------------
 def classify_regime():
-    delta = (R/L)**2 - 4*(1/(L*C))
-    if abs(delta) < 1e-3:
+    omega0 = 1 / np.sqrt(L * C)
+    gamma = R / (2 * L)
+
+    if abs(gamma - omega0) < 1e-3:
         return "Criticamente amortecido"
-    elif delta > 0:
+    elif gamma > omega0:
         return "Superamortecido"
     else:
         return "Subamortecido"
