@@ -103,6 +103,7 @@ V(t) = V₀ cos(ωt)
 Equations of motion:
 
 q'(t) = i
+
 i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 
 Run:
