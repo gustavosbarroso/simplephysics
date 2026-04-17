@@ -11,6 +11,7 @@ from matplotlib.widgets import Slider
 # ---------------------------
 g = 9.81
 L = 0.10
+m = 1.0
 b = 0.5
 
 # ---------------------------
@@ -18,7 +19,10 @@ b = 0.5
 # ---------------------------
 def f(r, t):
     theta, omega = r
-    return np.array([omega, -(g / L) * np.sin(theta) - b * omega], float)
+    return np.array([
+        omega,
+        -(g / L) * np.sin(theta) - (b/m) * omega
+    ], float)
 
 # ---------------------------
 # RK4
@@ -55,14 +59,17 @@ def solve(theta0, omega0):
     return tp, th, om, x, y
 
 # ---------------------------
-# CLASSIFICAÇÃO
+# CLASSIFICAÇÃO (APENAS ANALÍTICA)
 # ---------------------------
 def classify_regime():
-    if abs(b) < 1e-6:
-        return "Pêndulo simples"
-    delta = b**2 - 4*(g/L)
+    omega0 = np.sqrt(g / L)
+    gamma = (b/m) / 2
 
-    if abs(delta) < 1e-3:
+    delta = gamma**2 - omega0**2
+
+    if abs(b/m) < 1e-6:
+        return "Sem amortecimento"
+    elif abs(delta) < 1e-3:
         return "Criticamente amortecido"
     elif delta > 0:
         return "Superamortecido"
@@ -81,31 +88,39 @@ tp, th, om, x, y = solve(theta0, omega0)
 # FIGURA
 # ---------------------------
 fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(11, 5))
-plt.subplots_adjust(left=0.25, bottom=0.35)
+plt.subplots_adjust(left=0.25, bottom=0.40)
 
 # ---------------------------
 # PÊNDULO
 # ---------------------------
-ax_pend.set_xlim(-2, 2)
-ax_pend.set_ylim(-2, 2)
+def update_pendulum_axis():
+    limit = 1.2 * L
+    ax_pend.set_xlim(-limit, limit)
+    ax_pend.set_ylim(-limit, limit)
+
+update_pendulum_axis()
 ax_pend.set_aspect('equal')
 ax_pend.set_title("Pêndulo amortecido")
 
 line, = ax_pend.plot([], [], 'o-', lw=2)
 
 # ---------------------------
-# GRÁFICO
+# GRÁFICO (DOIS EIXOS)
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
-ax_plot.set_ylim(-1, 1)
-
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("θ(t) [rad], ω(t) [rad/s]")
+ax_plot.set_ylabel("θ(t) [rad]")
 
-line_th, = ax_plot.plot([], [], label="θ(t)")
-line_om, = ax_plot.plot([], [], label="ω(t)")
-ax_plot.legend()
+line_th, = ax_plot.plot([], [], label="θ(t) [rad]")
+
+ax_plot2 = ax_plot.twinx()
+ax_plot2.set_ylabel("ω(t) [rad/s]")
+line_om, = ax_plot2.plot([], [], linestyle='--', label="ω(t) [rad/s]")
+
+lines = [line_th, line_om]
+labels = [l.get_label() for l in lines]
+ax_plot.legend(lines, labels)
 
 # ---------------------------
 # HUD
@@ -130,49 +145,24 @@ def init():
 def update(frame):
     i = frame
 
-    # pêndulo
     line.set_data([0, x[i]], [0, y[i]])
-
-    # gráficos
     line_th.set_data(tp[:i], th[:i])
     line_om.set_data(tp[:i], om[:i])
 
-    # ---------------------------
-    # ESCALA DINÂMICA (ESTÁVEL)
-    # ---------------------------
     if i > 5:
-        data_min = min(
-            np.min(th[:i]),
-            np.min(om[:i])
-        )
-        data_max = max(
-            np.max(th[:i]),
-            np.max(om[:i])
-        )
-
-        if abs(data_max - data_min) < 1e-6:
-            data_max += 1
-            data_min -= 1
-
-        margin = 0.2 * (data_max - data_min)
-
-        ax_plot.set_ylim(
-            data_min - margin,
-            data_max + margin
-        )
+        ax_plot.set_ylim(np.min(th[:i])*1.2, np.max(th[:i])*1.2)
+        ax_plot2.set_ylim(np.min(om[:i])*1.2, np.max(om[:i])*1.2)
 
     regime = classify_regime()
 
-    # HUD
     texto = (
         f"L = {L:.2f} m\n"
         f"g = {g:.2f} m/s²\n"
-        f"b = {b:.2f} s⁻¹\n\n"
+        f"m = {m:.2f} kg\n"
+        f"b = {b:.2f} kg/s\n\n"
         f"Regime: {regime}\n\n"
-        f"θ₀ = {theta0:.2f} rad\n"
-        f"ω₀ = {omega0:.2f} rad/s\n\n"
         f"θ = {th[i]:.2f} rad\n"
-        f"ω = {om[i]:.2f} rad/s\n\n"
+        f"ω = {om[i]:.2f} rad/s\n"
         f"t = {tp[i]:.2f} s"
     )
 
@@ -180,45 +170,42 @@ def update(frame):
 
     return line, line_th, line_om, text_info
 
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=len(tp),
-    init_func=init,
-    interval=20,
-    blit=False,
-    cache_frame_data=False
-)
+ani = FuncAnimation(fig, update, frames=len(tp), init_func=init, interval=20)
 
 # ---------------------------
 # SLIDERS
 # ---------------------------
-ax_g = plt.axes([0.25, 0.25, 0.65, 0.03])
-ax_L = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_g = plt.axes([0.25, 0.30, 0.65, 0.03])
+ax_L = plt.axes([0.25, 0.25, 0.65, 0.03])
+ax_m = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_b = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.05, 0.65, 0.03])
 
-slider_g = Slider(ax_g, 'g(m/s²)', 1, 20, valinit=g)
-slider_L = Slider(ax_L, 'L(m)', 0.1, 5.0, valinit=L)
-slider_b = Slider(ax_b, 'b(s^-1)', 0, 50, valinit=b)
-slider_theta0 = Slider(ax_theta0, 'θ₀(rad)', -np.pi, np.pi, valinit=theta0)
-slider_omega0 = Slider(ax_omega0, 'ω₀(rad/s)', -10, 10, valinit=omega0)
+slider_g = Slider(ax_g, 'g [m/s²]', 1, 20, valinit=g)
+slider_L = Slider(ax_L, 'L [m]', 0.1, 5, valinit=L)
+slider_m = Slider(ax_m, 'm [kg]', 0.1, 10, valinit=m)
+slider_b = Slider(ax_b, 'b [kg/s]', 0, 50, valinit=b)
+slider_theta0 = Slider(ax_theta0, 'θ₀ [rad]', -np.pi, np.pi, valinit=theta0)
+slider_omega0 = Slider(ax_omega0, 'ω₀ [rad/s]', -10, 10, valinit=omega0)
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(val):
-    global g, L, b, theta0, omega0
+    global g, L, m, b, theta0, omega0
     global tp, th, om, x, y
 
     g = slider_g.val
     L = slider_L.val
+    m = slider_m.val
     b = slider_b.val
     theta0 = slider_theta0.val
     omega0 = slider_omega0.val
 
     tp, th, om, x, y = solve(theta0, omega0)
+
+    update_pendulum_axis()
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
@@ -228,6 +215,7 @@ def update_sliders(val):
 
 slider_g.on_changed(update_sliders)
 slider_L.on_changed(update_sliders)
+slider_m.on_changed(update_sliders)
 slider_b.on_changed(update_sliders)
 slider_theta0.on_changed(update_sliders)
 slider_omega0.on_changed(update_sliders)
