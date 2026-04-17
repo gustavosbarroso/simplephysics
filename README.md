@@ -82,6 +82,7 @@ python scripts/cadeia_interferencia.py
 Two bodies interacting via Newtonian gravity:
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
+
 r₂'' = G m₁ (r₁ − r₂) / |r₁ − r₂|³
 
 This system conserves total energy and angular momentum.
