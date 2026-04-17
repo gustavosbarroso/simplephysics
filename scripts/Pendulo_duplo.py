@@ -102,16 +102,25 @@ tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(theta1_0, 0, theta2_0, 0)
 fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.4)
 
-# Pêndulo
-ax_pend.set_xlim(-3, 3)
-ax_pend.set_ylim(-3, 3)
+# ---------------------------
+# ESCALA ADAPTÁVEL DO PÊNDULO
+# ---------------------------
+def update_pendulum_axis():
+    max_length = L1 + L2
+    margin = 1.1
+
+    ax_pend.set_xlim(-margin * max_length, margin * max_length)
+    ax_pend.set_ylim(-margin * max_length, margin * max_length)
+
+update_pendulum_axis()
+
 ax_pend.set_aspect('equal')
 ax_pend.set_title("Pêndulo Duplo")
 
 line, = ax_pend.plot([], [], 'o-', lw=2)
 
 # ---------------------------
-# GRÁFICO (ESCALA DINÂMICA)
+# GRÁFICO
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_ylim(-1, 1)
@@ -157,23 +166,9 @@ def update(frame):
     line_th2.set_data(tp[:i], th2[:i])
     line_om2.set_data(tp[:i], om2[:i])
 
-    # ---------------------------
-    # ESCALA DINÂMICA
-    # ---------------------------
     if i > 5:
-        data_min = min(
-            np.min(th1[:i]),
-            np.min(th2[:i]),
-            np.min(om1[:i]),
-            np.min(om2[:i])
-        )
-
-        data_max = max(
-            np.max(th1[:i]),
-            np.max(th2[:i]),
-            np.max(om1[:i]),
-            np.max(om2[:i])
-        )
+        data_min = min(np.min(th1[:i]), np.min(th2[:i]), np.min(om1[:i]), np.min(om2[:i]))
+        data_max = max(np.max(th1[:i]), np.max(th2[:i]), np.max(om1[:i]), np.max(om2[:i]))
 
         if abs(data_max - data_min) < 1e-6:
             data_min -= 1
@@ -181,10 +176,7 @@ def update(frame):
 
         margin = 0.2 * (data_max - data_min)
 
-        ax_plot.set_ylim(
-            data_min - margin,
-            data_max + margin
-        )
+        ax_plot.set_ylim(data_min - margin, data_max + margin)
 
     text_info.set_text(
         f"m1 = {m1:.2f} kg\n"
@@ -192,8 +184,6 @@ def update(frame):
         f"L1 = {L1:.2f} m\n"
         f"L2 = {L2:.2f} m\n"
         f"g = {g:.2f} m/s²\n\n"
-        f"θ1₀ = {theta1_0:.2f} rad\n"
-        f"θ2₀ = {theta2_0:.2f} rad\n\n"
         f"θ1 = {th1[i]:.2f} rad\n"
         f"ω1 = {om1[i]:.2f} rad/s\n"
         f"θ2 = {th2[i]:.2f} rad\n"
@@ -203,15 +193,7 @@ def update(frame):
 
     return line, line_th1, line_om1, line_th2, line_om2, text_info
 
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=len(tp),
-    init_func=init,
-    interval=20,
-    blit=False,
-    cache_frame_data=False
-)
+ani = FuncAnimation(fig, update, frames=len(tp), init_func=init, interval=20)
 
 # ---------------------------
 # SLIDERS
@@ -225,8 +207,8 @@ ax_t1 = plt.axes([0.25, 0.05, 0.65, 0.03])
 ax_t2 = plt.axes([0.25, 0.00, 0.65, 0.03])
 
 slider_g = Slider(ax_g, 'g(m/s²)', 1, 20, valinit=g)
-slider_L1 = Slider(ax_L1, 'L1(m)', 0.5, 2.0, valinit=L1)
-slider_L2 = Slider(ax_L2, 'L2(m)', 0.5, 2.0, valinit=L2)
+slider_L1 = Slider(ax_L1, 'L1(m)', 0.5, 3.0, valinit=L1)
+slider_L2 = Slider(ax_L2, 'L2(m)', 0.5, 3.0, valinit=L2)
 slider_m1 = Slider(ax_m1, 'm1(kg)', 0.1, 5.0, valinit=m1)
 slider_m2 = Slider(ax_m2, 'm2(kg)', 0.1, 5.0, valinit=m2)
 slider_t1 = Slider(ax_t1, 'θ1₀(rad)', -np.pi, np.pi, valinit=theta1_0)
@@ -248,6 +230,8 @@ def update_sliders(val):
     theta2_0 = slider_t2.val
 
     tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(theta1_0, 0, theta2_0, 0)
+
+    update_pendulum_axis()
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
