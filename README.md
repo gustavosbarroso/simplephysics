@@ -23,7 +23,7 @@ The project explores a wide range of topics in physics through computational app
 
 Nonlinear pendulum with damping:
 
-θ'' + bθ' + (g/L) sin(θ) = 0
+θ'' + (b/m)θ' + (g/L) sin(θ) = 0
 
 Run:
 
