@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
-from matplotlib.patches import Rectangle, Circle
+from matplotlib.patches import Circle
 
 # ---------------------------
 # CONSTANTES
@@ -14,18 +14,16 @@ g = 9.81
 L = 0.5
 
 A = 0.3
-w_drive = 10.0   # precisa ser alto para efeito Kapitza
+w_drive = 10.0
 
 # ---------------------------
-# SISTEMA (KAPITZA)
+# SISTEMA
 # ---------------------------
 def f(r, t):
     theta, omega = r
 
-    # aceleração do suporte vertical
     ydd = -A * w_drive**2 * np.cos(w_drive * t)
-
-    domega = -( (g + ydd) / L ) * np.sin(theta)
+    domega = -((g + ydd) / L) * np.sin(theta)
 
     return np.array([omega, domega], float)
 
@@ -58,12 +56,19 @@ def RK4(f, a, b_int, N, r):
 # SOLVER
 # ---------------------------
 def solve(theta0, omega0):
-    tp, th, om = RK4(f, 0, 20, 2500, [theta0, omega0])
-
-    # movimento do pivô
+    tp, th, om = RK4(f, 0, 20, 1000, [theta0, omega0])
     y_pivot = A * np.cos(w_drive * tp)
-
     return tp, th, om, y_pivot
+
+# ---------------------------
+# ESCALA FÍSICA
+# ---------------------------
+def update_axis():
+    R = L + abs(A)
+    margin = 1.1
+
+    ax_sys.set_xlim(-margin*R, margin*R)
+    ax_sys.set_ylim(-margin*R, margin*R)
 
 # ---------------------------
 # INICIAIS
@@ -77,20 +82,14 @@ tp, th, om, y_pivot = solve(theta0, omega0)
 # FIGURA
 # ---------------------------
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
-plt.subplots_adjust(left=0.25, bottom=0.35)
+plt.subplots_adjust(left=0.25, bottom=0.40)
 
-# ---------------------------
-# SISTEMA VISUAL
-# ---------------------------
-ax_sys.set_xlim(-1.5, 1.5)
-ax_sys.set_ylim(-1.5, 1.5)
+update_axis()
+
 ax_sys.set_aspect('equal')
 ax_sys.set_title("Pêndulo de Kapitza")
 
-# pivô móvel
 pivot_dot, = ax_sys.plot([], [], 'ro')
-
-# pêndulo
 rod, = ax_sys.plot([], [], lw=2)
 mass = Circle((0,0), 0.06)
 ax_sys.add_patch(mass)
@@ -108,17 +107,14 @@ line_omega, = ax_plot.plot([], [], label="ω(t)")
 ax_plot.legend()
 
 # ---------------------------
-# ANIMAÇÃO
+# UPDATE
 # ---------------------------
 def update(frame):
     i = frame
-    t = tp[i]
 
-    # pivô oscilando verticalmente
     xp = 0.0
     yp = y_pivot[i]
 
-    # pêndulo
     xm = xp + L * np.sin(th[i])
     ym = yp - L * np.cos(th[i])
 
@@ -126,30 +122,29 @@ def update(frame):
     mass.center = (xm, ym)
     pivot_dot.set_data([xp], [yp])
 
-    # gráficos
     line_theta.set_data(tp[:i], th[:i])
     line_omega.set_data(tp[:i], om[:i])
 
-    # escala dinâmica
     if i > 10:
         ymin = min(np.min(th[:i]), np.min(om[:i]))
         ymax = max(np.max(th[:i]), np.max(om[:i]))
         margin = 0.2 * (ymax - ymin + 1e-6)
-
         ax_plot.set_ylim(ymin - margin, ymax + margin)
 
     return rod, mass, pivot_dot, line_theta, line_omega
 
-ani = FuncAnimation(fig, update, frames=len(tp), interval=20, blit=False)
+ani = FuncAnimation(fig, update, frames=len(tp), interval=20)
 
 # ---------------------------
 # SLIDERS
 # ---------------------------
+ax_L = plt.axes([0.25, 0.30, 0.65, 0.03])
 ax_A = plt.axes([0.25, 0.25, 0.65, 0.03])
 ax_w = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 
+slider_L = Slider(ax_L, 'L (m)', 0.1, 3.0, valinit=L)
 slider_A = Slider(ax_A, 'A (m)', 0, 1.0, valinit=A)
 slider_w = Slider(ax_w, 'ω_forçado (rad/s)', -15, 15, valinit=w_drive)
 slider_theta0 = Slider(ax_theta0, 'θ₀', -np.pi, np.pi, valinit=theta0)
@@ -159,9 +154,10 @@ slider_omega0 = Slider(ax_omega0, 'ω₀', -15, 15, valinit=omega0)
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global A, w_drive, theta0, omega0
+    global L, A, w_drive, theta0, omega0
     global tp, th, om, y_pivot
 
+    L = slider_L.val
     A = slider_A.val
     w_drive = slider_w.val
     theta0 = slider_theta0.val
@@ -169,12 +165,15 @@ def update_sliders(_):
 
     tp, th, om, y_pivot = solve(theta0, omega0)
 
+    update_axis()
+
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
     ani.event_source.start()
 
     fig.canvas.draw_idle()
 
+slider_L.on_changed(update_sliders)
 slider_A.on_changed(update_sliders)
 slider_w.on_changed(update_sliders)
 slider_theta0.on_changed(update_sliders)
