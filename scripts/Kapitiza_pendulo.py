@@ -82,7 +82,7 @@ tp, th, om, y_pivot = solve(theta0, omega0)
 # FIGURA
 # ---------------------------
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
-plt.subplots_adjust(left=0.25, bottom=0.40)
+plt.subplots_adjust(left=0.25, bottom=0.48)  # ↑ aumentei o bottom
 
 update_axis()
 
@@ -136,27 +136,30 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=len(tp), interval=20)
 
 # ---------------------------
-# SLIDERS
+# SLIDERS (reposicionados)
 # ---------------------------
-ax_L = plt.axes([0.25, 0.30, 0.65, 0.03])
-ax_A = plt.axes([0.25, 0.25, 0.65, 0.03])
-ax_w = plt.axes([0.25, 0.20, 0.65, 0.03])
-ax_theta0 = plt.axes([0.25, 0.15, 0.65, 0.03])
-ax_omega0 = plt.axes([0.25, 0.10, 0.65, 0.03])
+ax_g = plt.axes([0.25, 0.40, 0.65, 0.03])
+ax_L = plt.axes([0.25, 0.35, 0.65, 0.03])
+ax_A = plt.axes([0.25, 0.30, 0.65, 0.03])
+ax_w = plt.axes([0.25, 0.25, 0.65, 0.03])
+ax_theta0 = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_omega0 = plt.axes([0.25, 0.15, 0.65, 0.03])
 
+slider_g = Slider(ax_g, 'g (m/s²)', 0.0, 30.0, valinit=g)
 slider_L = Slider(ax_L, 'L (m)', 0.1, 3.0, valinit=L)
 slider_A = Slider(ax_A, 'A (m)', 0, 1.0, valinit=A)
-slider_w = Slider(ax_w, 'ω_forçado (rad/s)', -15, 15, valinit=w_drive)
-slider_theta0 = Slider(ax_theta0, 'θ₀', -np.pi, np.pi, valinit=theta0)
-slider_omega0 = Slider(ax_omega0, 'ω₀', -15, 15, valinit=omega0)
+slider_w = Slider(ax_w, 'ω_forçado (rad/s)', -30, 30, valinit=w_drive)
+slider_theta0 = Slider(ax_theta0, 'θ₀ (rad)', -np.pi, np.pi, valinit=theta0)
+slider_omega0 = Slider(ax_omega0, 'ω₀ (rad/s)', -30, 30, valinit=omega0)
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global L, A, w_drive, theta0, omega0
+    global g, L, A, w_drive, theta0, omega0
     global tp, th, om, y_pivot
 
+    g = slider_g.val
     L = slider_L.val
     A = slider_A.val
     w_drive = slider_w.val
@@ -173,6 +176,7 @@ def update_sliders(_):
 
     fig.canvas.draw_idle()
 
+slider_g.on_changed(update_sliders)
 slider_L.on_changed(update_sliders)
 slider_A.on_changed(update_sliders)
 slider_w.on_changed(update_sliders)
