@@ -65,39 +65,53 @@ tp, th, om, x, y = solve(theta0, omega0)
 # FIGURA
 # ---------------------------
 fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(11,5))
-
-# 🔥 espaço à esquerda pro HUD
 plt.subplots_adjust(left=0.25, bottom=0.3)
 
 # ---------------------------
-# PÊNDULO
+# PÊNDULO (escala dinâmica)
 # ---------------------------
-ax_pend.set_xlim(-2, 2)
-ax_pend.set_ylim(-2, 2)
 ax_pend.set_aspect('equal')
 ax_pend.set_title("Pêndulo")
+
+def update_axes_pend():
+    margem = 0.2 * L
+    limite = L + margem
+    ax_pend.set_xlim(-limite, limite)
+    ax_pend.set_ylim(-limite, limite)
+
+update_axes_pend()
 
 line, = ax_pend.plot([], [], 'o-', lw=2)
 
 # ---------------------------
-# GRÁFICO
+# GRÁFICO (escala dinâmica)
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
-
-ymin = min(np.min(th), np.min(om))
-ymax = max(np.max(th), np.max(om))
-ax_plot.set_ylim(ymin, ymax)
-
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("θ(t) [rad], ω(t) [rad/s]")
+ax_plot.set_ylabel("θ(t), ω(t)")
 
 line_th, = ax_plot.plot([], [], label="θ(t)")
 line_om, = ax_plot.plot([], [], label="ω(t)")
 ax_plot.legend()
 
+# função de escala dinâmica do gráfico
+def update_axes_plot(i):
+    if i < 5:
+        return
+
+    ymin = min(np.min(th[:i]), np.min(om[:i]))
+    ymax = max(np.max(th[:i]), np.max(om[:i]))
+
+    if abs(ymax - ymin) < 1e-8:
+        ymax += 1
+        ymin -= 1
+
+    margem = 0.2 * (ymax - ymin)
+    ax_plot.set_ylim(ymin - margem, ymax + margem)
+
 # ---------------------------
-# 🔥 HUD (FORA DOS GRÁFICOS)
+# HUD
 # ---------------------------
 text_info = fig.text(
     0.02, 0.75,
@@ -122,9 +136,11 @@ def update(frame):
     # pêndulo
     line.set_data([0, x[i]], [0, y[i]])
 
-    # gráficos
+    # gráfico
     line_th.set_data(tp[:i], th[:i])
     line_om.set_data(tp[:i], om[:i])
+
+    update_axes_plot(i)  # 🔥 escala dinâmica
 
     # HUD
     texto = (
@@ -176,6 +192,8 @@ def update_sliders(val):
     omega0 = slider_omega0.val
 
     tp, th, om, x, y = solve(theta0, omega0)
+
+    update_axes_pend()
 
     line.set_data([0, x[0]], [0, y[0]])
 
