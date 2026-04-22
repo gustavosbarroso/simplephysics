@@ -7,11 +7,19 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
 # ---------------------------
-# PARÂMETROS
+# PARAMS
 # ---------------------------
-N = 60
-m = 1.0
-k = 10.0
+params = {
+    "N": 60,
+    "m": 1.0,
+    "k": 10.0,
+    "c1": 60*0.3,
+    "c2": 60*0.7,
+    "l1": 3,
+    "l2": 3,
+    "A1": 1,
+    "A2": -1
+}
 
 # ---------------------------
 # GAUSSIANA
@@ -22,7 +30,11 @@ def gauss(i, centro, largura, amplitude):
 # ---------------------------
 # SISTEMA
 # ---------------------------
-def f(r, t, N, k, m):
+def f(r, t, params):
+    N = params["N"]
+    k = params["k"]
+    m = params["m"]
+
     x = r[:N]
     v = r[N:]
 
@@ -41,7 +53,7 @@ def f(r, t, N, k, m):
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, steps, r0, N, k, m):
+def RK4(f, a, b, steps, r0, params):
     h = (b - a) / steps
     tp = np.linspace(a, b, steps+1)
     r = np.array(r0, float)
@@ -51,10 +63,10 @@ def RK4(f, a, b, steps, r0, N, k, m):
     for i in range(steps):
         t = tp[i]
 
-        k1 = h * f(r, t, N, k, m)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h, N, k, m)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h, N, k, m)
-        k4 = h * f(r + k3, t + h, N, k, m)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
         sol.append(r.copy())
@@ -67,7 +79,8 @@ def RK4(f, a, b, steps, r0, N, k, m):
 fig, (ax_chain, ax_plot) = plt.subplots(1,2, figsize=(12,5))
 plt.subplots_adjust(bottom=0.35)
 
-# Cadeia
+N = params["N"]
+
 ax_chain.set_xlim(0, N-1)
 ax_chain.set_ylim(-2, 2)
 ax_chain.set_title("Interferência em cadeia de massas")
@@ -75,7 +88,6 @@ ax_chain.set_xlabel("posição (i)")
 ax_chain.set_ylabel("x_i (m)")
 line, = ax_chain.plot([], [], 'o-', lw=2)
 
-# gráfico temporal
 ax_plot.set_xlim(0, 20)
 ax_plot.set_ylim(-2, 2)
 ax_plot.set_title("x_i(t) (massa central)")
@@ -94,38 +106,42 @@ ax_l2 = plt.axes([0.2, 0.10, 0.65, 0.03])
 ax_A1 = plt.axes([0.2, 0.05, 0.65, 0.03])
 ax_A2 = plt.axes([0.2, 0.00, 0.65, 0.03])
 
-slider_c1 = Slider(ax_c1, 'x1 inicial (m)', 0, N-1, valinit=N*0.3)
-slider_c2 = Slider(ax_c2, 'x2 inicial (m)', 0, N-1, valinit=N*0.7)
-slider_l1 = Slider(ax_l1, 'largura 1 (m)', 1, 10, valinit=3)
-slider_l2 = Slider(ax_l2, 'largura 2 (m)', 1, 10, valinit=3)
-slider_A1 = Slider(ax_A1, 'A1 (m)', -2, 2, valinit=1)
-slider_A2 = Slider(ax_A2, 'A2 (m)', -2, 2, valinit=-1)
+slider_c1 = Slider(ax_c1, 'x1 inicial (m)', 0, N-1, valinit=params["c1"])
+slider_c2 = Slider(ax_c2, 'x2 inicial (m)', 0, N-1, valinit=params["c2"])
+slider_l1 = Slider(ax_l1, 'largura 1 (m)', 1, 10, valinit=params["l1"])
+slider_l2 = Slider(ax_l2, 'largura 2 (m)', 1, 10, valinit=params["l2"])
+slider_A1 = Slider(ax_A1, 'A1 (m)', -2, 2, valinit=params["A1"])
+slider_A2 = Slider(ax_A2, 'A2 (m)', -2, 2, valinit=params["A2"])
 
 # ---------------------------
 # CONDIÇÃO INICIAL
 # ---------------------------
-def inicial():
+def inicial(params):
+    N = params["N"]
+
     x0 = np.zeros(N)
     v0 = np.zeros(N)
 
     for i in range(N):
-        x0[i] += gauss(i, slider_c1.val, slider_l1.val, slider_A1.val)
-        x0[i] += gauss(i, slider_c2.val, slider_l2.val, slider_A2.val)
+        x0[i] += gauss(i, params["c1"], params["l1"], params["A1"])
+        x0[i] += gauss(i, params["c2"], params["l2"], params["A2"])
 
     return np.concatenate([x0, v0])
 
 # ---------------------------
 # SOLVER
 # ---------------------------
-def solve():
-    r0 = inicial()
-    tp, sol = RK4(f, 0, 20, 800, r0, N, k, m)
+def solve(params):
+    r0 = inicial(params)
+    tp, sol = RK4(f, 0, 20, 500, r0, params)
+
+    N = params["N"]
     x = sol[:, :N]
     v = sol[:, N:]
+
     return tp, x, v
 
-# resolve pela primeira vez
-tp, x, v = solve()
+tp, x, v = solve(params)
 
 # ---------------------------
 # ANIMAÇÃO
@@ -155,9 +171,16 @@ ani = FuncAnimation(
 def update_sliders(val):
     global tp, x, v
 
-    tp, x, v = solve()
+    params["c1"] = slider_c1.val
+    params["c2"] = slider_c2.val
+    params["l1"] = slider_l1.val
+    params["l2"] = slider_l2.val
+    params["A1"] = slider_A1.val
+    params["A2"] = slider_A2.val
 
-    line_plot.set_data([], [])  # limpa gráfico
+    tp, x, v = solve(params)
+
+    line_plot.set_data([], [])
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
