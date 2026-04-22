@@ -8,21 +8,29 @@ from matplotlib.widgets import Slider
 from matplotlib.patches import Circle
 
 # ---------------------------
-# CONSTANTES
+# PARÂMETROS
 # ---------------------------
-g = 9.81
-L = 0.5
-
-A = 0.3
-w_drive = 10.0
+params = {
+    "g": 9.81,
+    "L": 0.5,
+    "A": 0.3,
+    "w_drive": 10.0,
+    "theta0": 0.3,
+    "omega0": 0.0
+}
 
 # ---------------------------
 # SISTEMA
 # ---------------------------
-def f(r, t):
+def f(r, t, params):
     theta, omega = r
 
-    ydd = -A * w_drive**2 * np.cos(w_drive * t)
+    g = params["g"]
+    L = params["L"]
+    A = params["A"]
+    w = params["w_drive"]
+
+    ydd = -A * w**2 * np.cos(w * t)
     domega = -((g + ydd) / L) * np.sin(theta)
 
     return np.array([omega, domega], float)
@@ -30,7 +38,7 @@ def f(r, t):
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b_int, N, r):
+def RK4(f, a, b_int, N, r, params):
     h = (b_int - a) / N
     tp = np.linspace(a, b_int, N + 1)
     r = np.array(r, float)
@@ -40,10 +48,10 @@ def RK4(f, a, b_int, N, r):
     for i in range(N):
         t = tp[i]
 
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -55,34 +63,37 @@ def RK4(f, a, b_int, N, r):
 # ---------------------------
 # SOLVER
 # ---------------------------
-def solve(theta0, omega0):
-    tp, th, om = RK4(f, 0, 20, 1000, [theta0, omega0])
-    y_pivot = A * np.cos(w_drive * tp)
+def solve(params):
+    tp, th, om = RK4(
+        f, 0, 20, 1000,
+        [params["theta0"], params["omega0"]],
+        params
+    )
+
+    y_pivot = params["A"] * np.cos(params["w_drive"] * tp)
+
     return tp, th, om, y_pivot
 
 # ---------------------------
-# ESCALA FÍSICA
+# ESCALA
 # ---------------------------
 def update_axis():
-    R = L + abs(A)
+    R = params["L"] + abs(params["A"])
     margin = 1.1
 
     ax_sys.set_xlim(-margin*R, margin*R)
     ax_sys.set_ylim(-margin*R, margin*R)
 
 # ---------------------------
-# INICIAIS
+# INICIAL
 # ---------------------------
-theta0 = 0.3
-omega0 = 0.0
-
-tp, th, om, y_pivot = solve(theta0, omega0)
+tp, th, om, y_pivot = solve(params)
 
 # ---------------------------
 # FIGURA
 # ---------------------------
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
-plt.subplots_adjust(left=0.25, bottom=0.48)  # ↑ aumentei o bottom
+plt.subplots_adjust(left=0.25, bottom=0.48)
 
 update_axis()
 
@@ -115,6 +126,8 @@ def update(frame):
     xp = 0.0
     yp = y_pivot[i]
 
+    L = params["L"]
+
     xm = xp + L * np.sin(th[i])
     ym = yp - L * np.cos(th[i])
 
@@ -136,7 +149,7 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=len(tp), interval=20)
 
 # ---------------------------
-# SLIDERS (reposicionados)
+# SLIDERS
 # ---------------------------
 ax_g = plt.axes([0.25, 0.40, 0.65, 0.03])
 ax_L = plt.axes([0.25, 0.35, 0.65, 0.03])
@@ -145,28 +158,26 @@ ax_w = plt.axes([0.25, 0.25, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.15, 0.65, 0.03])
 
-slider_g = Slider(ax_g, 'g (m/s²)', 0.0, 30.0, valinit=g)
-slider_L = Slider(ax_L, 'L (m)', 0.1, 3.0, valinit=L)
-slider_A = Slider(ax_A, 'A (m)', 0, 1.0, valinit=A)
-slider_w = Slider(ax_w, 'ω_forçado (rad/s)', -30, 30, valinit=w_drive)
-slider_theta0 = Slider(ax_theta0, 'θ₀ (rad)', -np.pi, np.pi, valinit=theta0)
-slider_omega0 = Slider(ax_omega0, 'ω₀ (rad/s)', -30, 30, valinit=omega0)
+slider_g = Slider(ax_g, 'g (m/s²)', 0.0, 30.0, valinit=params["g"])
+slider_L = Slider(ax_L, 'L (m)', 0.1, 3.0, valinit=params["L"])
+slider_A = Slider(ax_A, 'A (m)', 0, 1.0, valinit=params["A"])
+slider_w = Slider(ax_w, 'ω_forçado (rad/s)', -30, 30, valinit=params["w_drive"])
+slider_theta0 = Slider(ax_theta0, 'θ₀ (rad)', -np.pi, np.pi, valinit=params["theta0"])
+slider_omega0 = Slider(ax_omega0, 'ω₀ (rad/s)', -30, 30, valinit=params["omega0"])
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global g, L, A, w_drive, theta0, omega0
+    params["g"] = slider_g.val
+    params["L"] = slider_L.val
+    params["A"] = slider_A.val
+    params["w_drive"] = slider_w.val
+    params["theta0"] = slider_theta0.val
+    params["omega0"] = slider_omega0.val
+
     global tp, th, om, y_pivot
-
-    g = slider_g.val
-    L = slider_L.val
-    A = slider_A.val
-    w_drive = slider_w.val
-    theta0 = slider_theta0.val
-    omega0 = slider_omega0.val
-
-    tp, th, om, y_pivot = solve(theta0, omega0)
+    tp, th, om, y_pivot = solve(params)
 
     update_axis()
 
