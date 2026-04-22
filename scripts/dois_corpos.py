@@ -16,7 +16,10 @@ UA_POR_ANO = 0.2108
 # ---------------------------
 # EQUAÇÕES
 # ---------------------------
-def dois_corpos(t, y, m1, m2):
+def dois_corpos(t, y, params):
+
+    m1 = params["m1"]
+    m2 = params["m2"]
 
     x1, y1, vx1, vy1, x2, y2, vx2, vy2 = y
 
@@ -34,7 +37,7 @@ def dois_corpos(t, y, m1, m2):
     return [vx1, vy1, ax1, ay1, vx2, vy2, ax2, ay2]
 
 # ---------------------------
-# CONDIÇÃO INICIAL (CM)
+# CONDIÇÃO INICIAL
 # ---------------------------
 def inicial(params):
 
@@ -70,27 +73,24 @@ def inicial(params):
 # ---------------------------
 def solve(params):
 
-    r = params["r"]
-    v_rel = params["v_rel"]
-    m1 = params["m1"]
-    m2 = params["m2"]
-
     y0 = inicial(params)
 
     t_max = params["t_max"]
     t_eval = np.linspace(0, t_max, 800)
 
     sol = solve_ivp(
-        dois_corpos,
+        lambda t, y: dois_corpos(t, y, params),
         (0, t_max),
         y0,
-        t_eval=t_eval,
-        args=(m1, m2)
+        t_eval=t_eval
     )
 
-    # ---------------------------
-    # INFO FÍSICA
-    # ---------------------------
+    # INFO
+    r = params["r"]
+    v_rel = params["v_rel"]
+    m1 = params["m1"]
+    m2 = params["m2"]
+
     M = m1 + m2
     v = v_rel * UA_POR_ANO
     v_esc = np.sqrt(2 * G * M / r)
@@ -124,7 +124,6 @@ def solve(params):
 fig, (ax_sys, ax_traj, ax_info) = plt.subplots(1,3, figsize=(14,5))
 plt.subplots_adjust(bottom=0.35)
 
-# Sistema
 ax_sys.set_title("Sistema (CM)")
 ax_sys.set_xlabel("x (UA)")
 ax_sys.set_ylabel("y (UA)")
@@ -136,6 +135,14 @@ p2, = ax_sys.plot([], [], 'bo', label="m2")
 cm_plot, = ax_sys.plot([0], [0], 'k+', markersize=10, label="CM")
 ax_sys.legend()
 
+# 🔹 HUD DE TEMPO (AQUI)
+text_time = ax_sys.text(
+    0.02, 0.95, "",
+    transform=ax_sys.transAxes,
+    fontsize=10,
+    bbox=dict(boxstyle="round", facecolor="white", alpha=0.7)
+)
+
 # Trajetória
 ax_traj.set_title("Órbitas")
 ax_traj.set_xlabel("x (UA)")
@@ -146,7 +153,7 @@ ax_traj.grid(alpha=0.3)
 traj1, = ax_traj.plot([], [], 'r-')
 traj2, = ax_traj.plot([], [], 'b-')
 
-# Painel info
+# Info
 ax_info.axis('off')
 info_text = ax_info.text(
     0.5, 0.5, "",
@@ -170,9 +177,6 @@ slider_m1 = Slider(ax_m1, "m1 (M☉)", 0.1, 5, valinit=1)
 slider_m2 = Slider(ax_m2, "m2 (M☉)", 0.1, 5, valinit=1)
 slider_t  = Slider(ax_t,  "tempo (anos)", 1, 20, valinit=5)
 
-# ---------------------------
-# PARAMS
-# ---------------------------
 def get_params():
     return {
         "r": slider_r.val,
@@ -203,14 +207,17 @@ def update(frame):
     traj1.set_data(x1[:frame], y1[:frame])
     traj2.set_data(x2[:frame], y2[:frame])
 
-    lim = max(3, 2*slider_r.val)
+    # 🔹 Atualiza tempo
+    text_time.set_text(f"t = {t[frame]:.2f} anos")
+
+    lim = max(3, 2*get_params()["r"])
 
     ax_sys.set_xlim(-lim, lim)
     ax_sys.set_ylim(-lim, lim)
     ax_traj.set_xlim(-lim, lim)
     ax_traj.set_ylim(-lim, lim)
 
-    return p1, p2, traj1, traj2, cm_plot
+    return p1, p2, traj1, traj2, cm_plot, text_time
 
 ani = FuncAnimation(fig, update, frames=len(t), interval=20, blit=False)
 
@@ -220,7 +227,8 @@ ani = FuncAnimation(fig, update, frames=len(t), interval=20, blit=False)
 def update_sliders(val):
     global t, sol, ani
 
-    t, sol, info = solve(get_params())
+    params = get_params()
+    t, sol, info = solve(params)
     info_text.set_text(info)
 
     traj1.set_data([], [])
