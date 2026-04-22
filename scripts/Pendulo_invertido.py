@@ -7,23 +7,31 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 from matplotlib.patches import Rectangle, Circle
 
-# ---------------------------
-# CONSTANTES
-# ---------------------------
-g = 9.81
-m = 1.0
-M = 2.0
-l = 1.0
-b = 0.1
+# ===========================
+# PARÂMETROS (FONTE ÚNICA)
+# ===========================
+params = {
+    "g": 9.81,
+    "m": 1.0,
+    "M": 2.0,
+    "l": 1.0,
+    "A": 0.0,
+    "w": 2.0,
+    "theta0": 0.05
+}
 
-A = 0.0
-w = 2.0
-
-# ---------------------------
-# SISTEMA (FORMA MATRICIAL)
-# ---------------------------
-def f(r, t):
+# ===========================
+# SISTEMA DINÂMICO
+# ===========================
+def f(r, t, params):
     theta, omega, xpos, vel = r
+
+    g = params["g"]
+    m = params["m"]
+    M = params["M"]
+    l = params["l"]
+    A = params["A"]
+    w = params["w"]
 
     F = A * np.cos(w * t)
 
@@ -32,9 +40,8 @@ def f(r, t):
         [-m*l*np.cos(theta), (M + m)]
     ])
 
-    # 🔥 CORREÇÃO PRINCIPAL: sinal da gravidade
     b_vec = np.array([
-        +g * np.sin(theta) - (b/(m*l)) * omega,
+        g * np.sin(theta),
         F - m*l*(omega**2)*np.sin(theta)
     ])
 
@@ -42,10 +49,10 @@ def f(r, t):
 
     return np.array([omega, a_theta, vel, a_x], float)
 
-# ---------------------------
+# ===========================
 # RK4
-# ---------------------------
-def RK4(f, a, b, N, r):
+# ===========================
+def RK4(f, a, b, N, r, params):
     h = (b - a) / N
     tp = np.linspace(a, b, N + 1)
     r = np.array(r, float)
@@ -55,10 +62,10 @@ def RK4(f, a, b, N, r):
     for i in range(N):
         t = tp[i]
 
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -69,11 +76,17 @@ def RK4(f, a, b, N, r):
 
     return tp, np.array(theta), np.array(omega), np.array(x), np.array(v)
 
-# ---------------------------
+# ===========================
 # SOLVER
-# ---------------------------
-def solve(theta0, omega0, x0, v0):
-    tp, th, om, x, v = RK4(f, 0, 10, 1500, [theta0, omega0, x0, v0])
+# ===========================
+def solve(params):
+    tp, th, om, x, v = RK4(
+        f, 0, 10, 1500,
+        [params["theta0"], 0, 0, 0],
+        params
+    )
+
+    l = params["l"]
 
     xb = x
     yb = np.zeros_like(x)
@@ -83,30 +96,26 @@ def solve(theta0, omega0, x0, v0):
 
     return tp, th, om, x, v, xb, yb, xp, yp
 
-# ---------------------------
-# INICIAIS
-# ---------------------------
-theta0 = 0.05
+# ===========================
+# INICIAL
+# ===========================
+tp, th, om, x, v, xb, yb, xp, yp = solve(params)
 
-tp, th, om, x, v, xb, yb, xp, yp = solve(theta0, 0, 0, 0)
-
-# ---------------------------
+# ===========================
 # FIGURA
-# ---------------------------
+# ===========================
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.45)
 
-# sistema
 ax_sys.set_xlim(-5, 5)
 ax_sys.set_ylim(-1, 2.5)
 ax_sys.set_aspect('equal')
 ax_sys.set_title("Carrinho + Pêndulo Invertido")
 
-# carrinho
 cart_width = 0.6
 cart_height = 0.3
-cart = Rectangle((0,0), cart_width, cart_height, fc='black')
 
+cart = Rectangle((0,0), cart_width, cart_height, fc='black')
 wheel1 = Circle((0,0), 0.1, fc='gray')
 wheel2 = Circle((0,0), 0.1, fc='gray')
 
@@ -118,7 +127,9 @@ ax_sys.add_patch(wheel1)
 ax_sys.add_patch(wheel2)
 ax_sys.add_patch(mass)
 
-# gráfico
+# ===========================
+# GRÁFICO
+# ===========================
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
@@ -127,29 +138,25 @@ ax_plot.set_ylabel("θ [rad], x [m], ω [rad/s]")
 line_theta, = ax_plot.plot([], [], label="θ(t)")
 line_x, = ax_plot.plot([], [], label="x(t)")
 line_omega, = ax_plot.plot([], [], label="ω(t)")
-
 ax_plot.legend()
 
-# ---------------------------
-# ANIMAÇÃO
-# ---------------------------
-def init():
-    return cart, wheel1, wheel2, rod, mass
-
+# ===========================
+# UPDATE ANIMAÇÃO
+# ===========================
 def update(frame):
     i = frame
 
     x_c = xb[i]
     y_c = 0
 
-    # carrinho
     cart.set_xy((x_c - cart_width/2, y_c))
     wheel1.center = (x_c - 0.2, y_c - 0.1)
     wheel2.center = (x_c + 0.2, y_c - 0.1)
 
-    # pêndulo
     x_top = x_c
     y_top = y_c + cart_height
+
+    l = params["l"]
 
     x_mass = x_top + l * np.sin(th[i])
     y_mass = y_top + l * np.cos(th[i])
@@ -157,12 +164,10 @@ def update(frame):
     rod.set_data([x_top, x_mass], [y_top, y_mass])
     mass.center = (x_mass, y_mass)
 
-    # gráficos
     line_theta.set_data(tp[:i], th[:i])
     line_x.set_data(tp[:i], x[:i])
     line_omega.set_data(tp[:i], om[:i])
 
-    # escala dinâmica
     if i > 10:
         ymin = min(np.min(th[:i]), np.min(x[:i]), np.min(om[:i]))
         ymax = max(np.max(th[:i]), np.max(x[:i]), np.max(om[:i]))
@@ -180,46 +185,41 @@ ani = FuncAnimation(
     fig,
     update,
     frames=len(tp),
-    init_func=init,
     interval=20,
     blit=False
 )
 
-# ---------------------------
-# SLIDERS
-# ---------------------------
+# ===========================
+# SLIDERS (via params)
+# ===========================
 ax_A = plt.axes([0.25, 0.35, 0.65, 0.03])
 ax_w = plt.axes([0.25, 0.30, 0.65, 0.03])
-ax_b = plt.axes([0.25, 0.25, 0.65, 0.03])
-ax_M = plt.axes([0.25, 0.20, 0.65, 0.03])
-ax_m = plt.axes([0.25, 0.15, 0.65, 0.03])
-ax_l = plt.axes([0.25, 0.10, 0.65, 0.03])
-ax_t0 = plt.axes([0.25, 0.05, 0.65, 0.03])
+ax_M = plt.axes([0.25, 0.25, 0.65, 0.03])
+ax_m = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_l = plt.axes([0.25, 0.15, 0.65, 0.03])
+ax_t0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 
-slider_A = Slider(ax_A, 'A [N]', 0, 10, valinit=A)
-slider_w = Slider(ax_w, 'ω [rad/s]', 0, 10, valinit=w)
-slider_b = Slider(ax_b, 'b [kg·m²/s]', 0, 2, valinit=b)
-slider_M = Slider(ax_M, 'M [kg]', 0.5, 10, valinit=M)
-slider_m = Slider(ax_m, 'm [kg]', 0.1, 5, valinit=m)
-slider_l = Slider(ax_l, 'l [m]', 0.5, 3, valinit=l)
-slider_t0 = Slider(ax_t0, 'θ₀ [rad]', -np.pi, np.pi, valinit=theta0)
+slider_A = Slider(ax_A, 'A [N]', 0, 30, valinit=params["A"])
+slider_w = Slider(ax_w, 'ω [rad/s]', 0, 30, valinit=params["w"])
+slider_M = Slider(ax_M, 'M [kg]', 0.5, 10, valinit=params["M"])
+slider_m = Slider(ax_m, 'm [kg]', 0.1, 5, valinit=params["m"])
+slider_l = Slider(ax_l, 'l [m]', 0.5, 3, valinit=params["l"])
+slider_t0 = Slider(ax_t0, 'θ₀ [rad]', -np.pi, np.pi, valinit=params["theta0"])
 
-# ---------------------------
+# ===========================
 # UPDATE SLIDERS
-# ---------------------------
+# ===========================
 def update_sliders(_):
-    global A, w, b, M, m, l
     global tp, th, om, x, v, xb, yb, xp, yp
 
-    A = slider_A.val
-    w = slider_w.val
-    b = slider_b.val
-    M = slider_M.val
-    m = slider_m.val
-    l = slider_l.val
-    theta0 = slider_t0.val
+    params["A"] = slider_A.val
+    params["w"] = slider_w.val
+    params["M"] = slider_M.val
+    params["m"] = slider_m.val
+    params["l"] = slider_l.val
+    params["theta0"] = slider_t0.val
 
-    tp, th, om, x, v, xb, yb, xp, yp = solve(theta0, 0, 0, 0)
+    tp, th, om, x, v, xb, yb, xp, yp = solve(params)
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
@@ -229,7 +229,6 @@ def update_sliders(_):
 
 slider_A.on_changed(update_sliders)
 slider_w.on_changed(update_sliders)
-slider_b.on_changed(update_sliders)
 slider_M.on_changed(update_sliders)
 slider_m.on_changed(update_sliders)
 slider_l.on_changed(update_sliders)
