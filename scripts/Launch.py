@@ -7,28 +7,27 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
 # ---------------------------
-# CONSTANTE
+# PARAMS
 # ---------------------------
-g = 9.81
-
-# ---------------------------
-# PARÂMETROS
-# ---------------------------
-v0 = 20.0
-theta0_deg = 45.0
-theta0 = np.deg2rad(theta0_deg)
-
-k = 0.02
-m = 1.0
-
-# 🔥 CONTROLE DE VELOCIDADE
-speed = 3  # aumente para acelerar
+params = {
+    "g": 9.81,
+    "v0": 20.0,
+    "theta0_deg": 45.0,
+    "k": 0.02,
+    "m": 1.0,
+    "speed": 3
+}
 
 # ---------------------------
 # DINÂMICA COM ARRASTO
 # ---------------------------
-def f_drag(r, t):
+def f_drag(r, t, params):
     x, y, vx, vy = r
+
+    g = params["g"]
+    k = params["k"]
+    m = params["m"]
+
     v = np.sqrt(vx**2 + vy**2)
 
     ax = -(k/m) * v * vx
@@ -39,7 +38,7 @@ def f_drag(r, t):
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, N, r0):
+def RK4(f, a, b, N, r0, params):
     h = (b - a) / N
     t = a
     r = np.array(r0, float)
@@ -48,10 +47,10 @@ def RK4(f, a, b, N, r0):
     x_list, y_list, vx_list, vy_list = [r[0]], [r[1]], [r[2]], [r[3]]
 
     for _ in range(N):
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
         t += h
@@ -74,19 +73,26 @@ def RK4(f, a, b, N, r0):
 # ---------------------------
 # SOLUÇÃO COM ARRASTO
 # ---------------------------
-def solve_drag(v0, theta):
+def solve_drag(params):
+    v0 = params["v0"]
+    theta = np.deg2rad(params["theta0_deg"])
+
     vx0 = v0 * np.cos(theta)
     vy0 = v0 * np.sin(theta)
 
     if abs(vx0) < 1e-12:
         vx0 = 0.0
 
-    return RK4(f_drag, 0, 20, 600, [0, 0, vx0, vy0])
+    return RK4(f_drag, 0, 20, 600, [0, 0, vx0, vy0], params)
 
 # ---------------------------
 # SOLUÇÃO IDEAL
 # ---------------------------
-def solve_ideal(v0, theta):
+def solve_ideal(params):
+    v0 = params["v0"]
+    theta = np.deg2rad(params["theta0_deg"])
+    g = params["g"]
+
     vx0 = v0 * np.cos(theta)
     vy0 = v0 * np.sin(theta)
 
@@ -110,8 +116,8 @@ def solve_ideal(v0, theta):
 # ---------------------------
 # INICIAL
 # ---------------------------
-tp_d, x_d, y_d, vx_d, vy_d = solve_drag(v0, theta0)
-tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(v0, theta0)
+tp_d, x_d, y_d, vx_d, vy_d = solve_drag(params)
+tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(params)
 
 n_frames = max(len(tp_d), len(tp_i))
 
@@ -121,7 +127,6 @@ n_frames = max(len(tp_d), len(tp_i))
 fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.35)
 
-# SISTEMA
 ax_sys.set_title("Trajetória")
 ax_sys.set_xlabel("x [m]")
 ax_sys.set_ylabel("y [m]")
@@ -132,7 +137,6 @@ point, = ax_sys.plot([], [], 'ro')
 
 ax_sys.legend()
 
-# GRÁFICO
 ax_plot.set_title("y(t)")
 ax_plot.set_xlabel("t [s]")
 ax_plot.set_ylabel("y [m]")
@@ -146,6 +150,8 @@ ax_plot.legend()
 # ANIMAÇÃO
 # ---------------------------
 def update(frame):
+    speed = params["speed"]
+
     i = min(frame * speed, n_frames - 1)
 
     fator_d = len(tp_d) / n_frames
@@ -182,27 +188,26 @@ ax_theta = plt.axes([0.25, 0.20, 0.65, 0.03])
 ax_k = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_m = plt.axes([0.25, 0.10, 0.65, 0.03])
 
-slider_v0 = Slider(ax_v0, 'v0 [m/s]', 0, 50, valinit=v0)
-slider_theta = Slider(ax_theta, 'θ [°]', 0, 90, valinit=theta0_deg)
-slider_k = Slider(ax_k, 'k[kg/m]', 0, 0.1, valinit=k)
-slider_m = Slider(ax_m, 'm [kg]', 0.1, 5, valinit=m)
+slider_v0 = Slider(ax_v0, 'v0 [m/s]', 0, 50, valinit=params["v0"])
+slider_theta = Slider(ax_theta, 'θ [°]', 0, 90, valinit=params["theta0_deg"])
+slider_k = Slider(ax_k, 'k[kg/m]', 0, 0.1, valinit=params["k"])
+slider_m = Slider(ax_m, 'm [kg]', 0.1, 5, valinit=params["m"])
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(_):
-    global v0, theta0, k, m
     global tp_d, x_d, y_d, vx_d, vy_d
     global tp_i, x_i, y_i, vx_i, vy_i
     global n_frames, ani
 
-    v0 = slider_v0.val
-    theta0 = np.deg2rad(slider_theta.val)
-    k = slider_k.val
-    m = slider_m.val
+    params["v0"] = slider_v0.val
+    params["theta0_deg"] = slider_theta.val
+    params["k"] = slider_k.val
+    params["m"] = slider_m.val
 
-    tp_d, x_d, y_d, vx_d, vy_d = solve_drag(v0, theta0)
-    tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(v0, theta0)
+    tp_d, x_d, y_d, vx_d, vy_d = solve_drag(params)
+    tp_i, x_i, y_i, vx_i, vy_i = solve_ideal(params)
 
     n_frames = max(len(tp_d), len(tp_i))
 
