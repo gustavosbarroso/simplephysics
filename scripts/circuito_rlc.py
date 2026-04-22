@@ -9,20 +9,24 @@ from matplotlib.widgets import Slider
 # ---------------------------
 # PARÂMETROS
 # ---------------------------
-R = 2.0
-L = 1.0
-C = 1.0
-
-q0 = 0.0
-i0 = 0.0
-
-V0 = 5.0
-omega = 2.0
+params = {
+    "R": 2.0,
+    "L": 1.0,
+    "C": 1.0,
+    "q0": 0.0,
+    "i0": 0.0,
+    "V0": 5.0,
+    "omega": 2.0
+}
 
 # ---------------------------
 # CLASSIFICAÇÃO
 # ---------------------------
-def classify_regime():
+def classify_regime(params):
+    R = params["R"]
+    L = params["L"]
+    C = params["C"]
+
     omega0 = 1 / np.sqrt(L * C)
     gamma = R / (2 * L)
 
@@ -36,19 +40,26 @@ def classify_regime():
 # ---------------------------
 # SISTEMA
 # ---------------------------
-def f(r, t):
+def f(r, t, params):
     q, i = r
+
+    R = params["R"]
+    L = params["L"]
+    C = params["C"]
+    V0 = params["V0"]
+    omega = params["omega"]
+
     Vt = V0 * np.cos(omega * t)
 
     return np.array([
         i,
-        (Vt/L) - (R/L)*i - (1/(L*C))*q
+        (Vt / L) - (R / L) * i - (1 / (L * C)) * q
     ], float)
 
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, N, r):
+def RK4(f, a, b, N, r, params):
     h = (b - a) / N
     tp = np.linspace(a, b, N + 1)
     r = np.array(r, float)
@@ -58,10 +69,10 @@ def RK4(f, a, b, N, r):
     for k in range(N):
         t = tp[k]
 
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -70,13 +81,20 @@ def RK4(f, a, b, N, r):
 
     return tp, qp, ip
 
-def solve(q0, i0):
-    return RK4(f, 0, 20, 1000, [q0, i0])
+# ---------------------------
+# SOLVER
+# ---------------------------
+def solve(params):
+    return RK4(
+        f, 0, 20, 1000,
+        [params["q0"], params["i0"]],
+        params
+    )
 
 # ---------------------------
 # INICIAL
 # ---------------------------
-tp, q, i_vals = solve(q0, i0)
+tp, q, i_vals = solve(params)
 q = np.array(q)
 i_vals = np.array(i_vals)
 
@@ -97,7 +115,6 @@ ax_circ.set_title("RLC com Fonte AC (cos)")
 x0, x1 = 2, 8
 y0, y1 = 1, 5
 
-# fios
 ax_circ.plot([x0, x1], [y0, y0], lw=2)
 ax_circ.plot([x1, x1], [y0, y1], lw=2)
 ax_circ.plot([x1, x0], [y1, y1], lw=2)
@@ -135,7 +152,6 @@ y_sin = yc + 0.3*np.sin(t_sin)
 ax_circ.plot(x_sin, y_sin, lw=2)
 
 ax_circ.text(xc-1.0, yc, "AC")
-
 ax_circ.text(5, y0-0.8, "R", ha='center')
 ax_circ.text(x1+0.6, (yc0+yc1)/2, "C", va='center')
 ax_circ.text(5, y1+0.8, "L", ha='center')
@@ -177,7 +193,6 @@ path_x = np.array(path_x)
 path_y = np.array(path_y)
 N_path = len(path_x)
 
-# elétrons
 n_electrons = 25
 electron_pos = np.linspace(0, N_path-1, n_electrons)
 
@@ -194,7 +209,7 @@ electrons, = ax_circ.plot(
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_title("Resposta do circuito")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("q(t), i(t)")
+ax_plot.set_ylabel("q(t)-(C), i(t)-(A)")
 
 line_q, = ax_plot.plot([], [], label="q(t)")
 line_i, = ax_plot.plot([], [], label="i(t)")
@@ -210,28 +225,24 @@ def update(frame):
     line_i.set_data(tp[:frame], i_vals[:frame])
 
     if frame > 5:
-        ymax = max(
-            np.max(np.abs(q[:frame])),
-            np.max(np.abs(i_vals[:frame])),
-            1e-3
-        )
+        ymax = max(np.max(np.abs(q[:frame])), np.max(np.abs(i_vals[:frame])), 1e-3)
         ax_plot.set_ylim(-1.2*ymax, 1.2*ymax)
 
-    # HUD
-    regime = classify_regime()
+    regime = classify_regime(params)
+
     text_info.set_text(
-        f"R = {R:.2f} Ω\n"
-        f"L = {L:.2f} H\n"
-        f"C = {C:.2f} F\n\n"
+        f"R = {params['R']:.2f} Ω\n"
+        f"L = {params['L']:.2f} H\n"
+        f"C = {params['C']:.2f} F\n\n"
         f"Regime: {regime}\n\n"
-        f"q0 = {q0:.2f} C\n"
-        f"i0 = {i0:.2f} A\n"
+        f"q0 = {params['q0']:.2f} C\n"
+        f"i0 = {params['i0']:.2f} A\n"
         f"q = {q[frame]:.2f} C\n"
         f"i = {i_vals[frame]:.2f} A\n"
         f"t = {tp[frame]:.2f} s"
     )
 
-    # ELÉTRONS
+    # elétrons
     current = i_vals[frame]
     speed = 5 * current
 
@@ -257,28 +268,31 @@ ax_w = plt.axes([0.2, 0.25, 0.6, 0.03])
 ax_q0 = plt.axes([0.2, 0.18, 0.6, 0.03])
 ax_i0 = plt.axes([0.2, 0.13, 0.6, 0.03])
 
-slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=R)
-slider_L = Slider(ax_L, 'L (H)', 0.1, 5, valinit=L)
-slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=C)
-slider_V0 = Slider(ax_V0, 'V0 (V)', 0, 10, valinit=V0)
-slider_w = Slider(ax_w, 'ω (rad/s)', 0.1, 10, valinit=omega)
-slider_q0 = Slider(ax_q0, 'q0 (C)', -5, 5, valinit=q0)
-slider_i0 = Slider(ax_i0, 'i0 (A)', -5, 5, valinit=i0)
+slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=params["R"])
+slider_L = Slider(ax_L, 'L (H)', 0.1, 5, valinit=params["L"])
+slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=params["C"])
+slider_V0 = Slider(ax_V0, 'V0 (V)', 0, 10, valinit=params["V0"])
+slider_w = Slider(ax_w, 'ω (rad/s)', 0.1, 10, valinit=params["omega"])
+slider_q0 = Slider(ax_q0, 'q0 (C)', -5, 5, valinit=params["q0"])
+slider_i0 = Slider(ax_i0, 'i0 (A)', -5, 5, valinit=params["i0"])
 
 def update_sliders(val):
-    global R, L, C, V0, omega, q0, i0, tp, q, i_vals
+    global tp, q, i_vals, electron_pos
 
-    R = slider_R.val
-    L = slider_L.val
-    C = slider_C.val
-    V0 = slider_V0.val
-    omega = slider_w.val
-    q0 = slider_q0.val
-    i0 = slider_i0.val
+    params["R"] = slider_R.val
+    params["L"] = slider_L.val
+    params["C"] = slider_C.val
+    params["V0"] = slider_V0.val
+    params["omega"] = slider_w.val
+    params["q0"] = slider_q0.val
+    params["i0"] = slider_i0.val
 
-    tp, q, i_vals = solve(q0, i0)
+    tp, q, i_vals = solve(params)
     q = np.array(q)
     i_vals = np.array(i_vals)
+
+    # reset elétrons
+    electron_pos = np.linspace(0, N_path-1, n_electrons)
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
