@@ -7,16 +7,22 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
 # ---------------------------
-# PARÂMETROS INICIAIS
+# PARAMS
 # ---------------------------
-N = 30
-m = 1.0
-k = 10.0
+params = {
+    "N": 30,
+    "m": 1.0,
+    "k": 10.0
+}
 
 # ---------------------------
 # SISTEMA
 # ---------------------------
-def f(r, t, N, k, m):
+def f(r, t, params):
+    N = params["N"]
+    k = params["k"]
+    m = params["m"]
+
     x = r[:N]
     v = r[N:]
 
@@ -35,7 +41,7 @@ def f(r, t, N, k, m):
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, steps, r0, N, k, m):
+def RK4(f, a, b, steps, r0, params):
     h = (b - a) / steps
     tp = np.linspace(a, b, steps+1)
     r = np.array(r0, float)
@@ -45,10 +51,10 @@ def RK4(f, a, b, steps, r0, N, k, m):
     for i in range(steps):
         t = tp[i]
 
-        k1 = h * f(r, t, N, k, m)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h, N, k, m)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h, N, k, m)
-        k4 = h * f(r + k3, t + h, N, k, m)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
         sol.append(r.copy())
@@ -58,7 +64,9 @@ def RK4(f, a, b, steps, r0, N, k, m):
 # ---------------------------
 # CONDIÇÃO INICIAL
 # ---------------------------
-def inicial(N):
+def inicial(params):
+    N = params["N"]
+
     x0 = np.zeros(N)
     v0 = np.zeros(N)
 
@@ -70,16 +78,17 @@ def inicial(N):
 # ---------------------------
 # SOLVER
 # ---------------------------
-def solve(N, k, m):
-    r0 = inicial(N)
-    tp, sol = RK4(f, 0, 20, 800, r0, N, k, m)
+def solve(params):
+    r0 = inicial(params)
+    tp, sol = RK4(f, 0, 20, 800, r0, params)
 
+    N = params["N"]
     x = sol[:, :N]
     v = sol[:, N:]
 
     return tp, x, v
 
-tp, x, v = solve(N, k, m)
+tp, x, v = solve(params)
 
 # ---------------------------
 # FIGURA
@@ -94,6 +103,7 @@ ax.set_xlabel("i")
 ax.set_ylabel("x_i (m)")
 
 def ajustar_eixos():
+    N = params["N"]
     ax.set_xlim(0, N-1)
     ax.set_ylim(-1.5, 1.5)
 
@@ -103,6 +113,7 @@ ajustar_eixos()
 # INIT
 # ---------------------------
 def init():
+    N = params["N"]
     line.set_data(range(N), x[0])
     return line,
 
@@ -110,6 +121,7 @@ def init():
 # UPDATE
 # ---------------------------
 def update(frame):
+    N = params["N"]
     line.set_data(range(N), x[frame])
     return line,
 
@@ -129,21 +141,21 @@ ax_k = plt.axes([0.2, 0.15, 0.65, 0.03])
 ax_m = plt.axes([0.2, 0.10, 0.65, 0.03])
 ax_N = plt.axes([0.2, 0.05, 0.65, 0.03])
 
-slider_k = Slider(ax_k, 'k', 1, 20, valinit=k)
-slider_m = Slider(ax_m, 'm', 0.5, 5, valinit=m)
-slider_N = Slider(ax_N, 'N', 5, 100, valinit=N, valstep=1)
+slider_k = Slider(ax_k, 'k(N/m)', 1, 20, valinit=params["k"])
+slider_m = Slider(ax_m, 'm(kg)', 0.5, 5, valinit=params["m"])
+slider_N = Slider(ax_N, 'N', 5, 100, valinit=params["N"], valstep=1)
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(val):
-    global k, m, N, tp, x, v
+    global tp, x, v
 
-    k = slider_k.val
-    m = slider_m.val
-    N = int(slider_N.val)  # importante!
+    params["k"] = slider_k.val
+    params["m"] = slider_m.val
+    params["N"] = int(slider_N.val)
 
-    tp, x, v = solve(N, k, m)
+    tp, x, v = solve(params)
 
     ajustar_eixos()
 
