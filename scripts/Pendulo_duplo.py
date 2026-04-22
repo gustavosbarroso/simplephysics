@@ -7,19 +7,29 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
 # ---------------------------
-# CONSTANTES
+# PARAMS (substitui globals)
 # ---------------------------
-g = 9.81
-L1 = 1.0
-L2 = 1.0
-m1 = 1.0
-m2 = 1.0
+params = {
+    "g": 9.81,
+    "L1": 1.0,
+    "L2": 1.0,
+    "m1": 1.0,
+    "m2": 1.0,
+    "theta1_0": 1.0,
+    "theta2_0": 1.0
+}
 
 # ---------------------------
 # SISTEMA
 # ---------------------------
-def f(r, t):
+def f(r, t, params):
     theta1, omega1, theta2, omega2 = r
+
+    g = params["g"]
+    L1 = params["L1"]
+    L2 = params["L2"]
+    m1 = params["m1"]
+    m2 = params["m2"]
 
     delta = theta2 - theta1
 
@@ -46,7 +56,7 @@ def f(r, t):
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, N, r):
+def RK4(f, a, b, N, r, params):
     h = (b - a) / N
     tp = np.linspace(a, b, N + 1)
     r = np.array(r, float)
@@ -57,10 +67,10 @@ def RK4(f, a, b, N, r):
     for i in range(N):
         t = tp[i]
 
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
@@ -74,11 +84,18 @@ def RK4(f, a, b, N, r):
 # ---------------------------
 # SOLVER
 # ---------------------------
-def solve(theta1_0, omega1_0, theta2_0, omega2_0):
+def solve(params):
     tp, th1, om1, th2, om2 = RK4(
         f, 0, 10, 500,
-        [theta1_0, omega1_0, theta2_0, omega2_0]
+        [
+            params["theta1_0"], 0,
+            params["theta2_0"], 0
+        ],
+        params
     )
+
+    L1 = params["L1"]
+    L2 = params["L2"]
 
     x1 = L1 * np.sin(th1)
     y1 = -L1 * np.cos(th1)
@@ -91,10 +108,7 @@ def solve(theta1_0, omega1_0, theta2_0, omega2_0):
 # ---------------------------
 # INICIAIS
 # ---------------------------
-theta1_0 = 1.0
-theta2_0 = 1.0
-
-tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(theta1_0, 0, theta2_0, 0)
+tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(params)
 
 # ---------------------------
 # FIGURA
@@ -102,11 +116,8 @@ tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(theta1_0, 0, theta2_0, 0)
 fig, (ax_pend, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
 plt.subplots_adjust(left=0.25, bottom=0.4)
 
-# ---------------------------
-# ESCALA ADAPTÁVEL DO PÊNDULO
-# ---------------------------
 def update_pendulum_axis():
-    max_length = L1 + L2
+    max_length = params["L1"] + params["L2"]
     margin = 1.1
 
     ax_pend.set_xlim(-margin * max_length, margin * max_length)
@@ -139,12 +150,8 @@ ax_plot.legend()
 # ---------------------------
 # HUD
 # ---------------------------
-text_info = fig.text(
-    0.02, 0.55,
-    "",
-    fontsize=10,
-    bbox=dict(boxstyle="round", facecolor="white", alpha=0.8)
-)
+text_info = fig.text(0.02, 0.55, "", fontsize=10,
+    bbox=dict(boxstyle="round", facecolor="white", alpha=0.8))
 
 # ---------------------------
 # INIT
@@ -175,15 +182,14 @@ def update(frame):
             data_max += 1
 
         margin = 0.2 * (data_max - data_min)
-
         ax_plot.set_ylim(data_min - margin, data_max + margin)
 
     text_info.set_text(
-        f"m1 = {m1:.2f} kg\n"
-        f"m2 = {m2:.2f} kg\n"
-        f"L1 = {L1:.2f} m\n"
-        f"L2 = {L2:.2f} m\n"
-        f"g = {g:.2f} m/s²\n\n"
+        f"m1 = {params['m1']:.2f} kg\n"
+        f"m2 = {params['m2']:.2f} kg\n"
+        f"L1 = {params['L1']:.2f} m\n"
+        f"L2 = {params['L2']:.2f} m\n"
+        f"g = {params['g']:.2f} m/s²\n\n"
         f"θ1 = {th1[i]:.2f} rad\n"
         f"ω1 = {om1[i]:.2f} rad/s\n"
         f"θ2 = {th2[i]:.2f} rad\n"
@@ -206,30 +212,28 @@ ax_m2 = plt.axes([0.25, 0.10, 0.65, 0.03])
 ax_t1 = plt.axes([0.25, 0.05, 0.65, 0.03])
 ax_t2 = plt.axes([0.25, 0.00, 0.65, 0.03])
 
-slider_g = Slider(ax_g, 'g(m/s²)', 1, 20, valinit=g)
-slider_L1 = Slider(ax_L1, 'L1(m)', 0.5, 3.0, valinit=L1)
-slider_L2 = Slider(ax_L2, 'L2(m)', 0.5, 3.0, valinit=L2)
-slider_m1 = Slider(ax_m1, 'm1(kg)', 0.1, 5.0, valinit=m1)
-slider_m2 = Slider(ax_m2, 'm2(kg)', 0.1, 5.0, valinit=m2)
-slider_t1 = Slider(ax_t1, 'θ1₀(rad)', -np.pi, np.pi, valinit=theta1_0)
-slider_t2 = Slider(ax_t2, 'θ2₀(rad)', -np.pi, np.pi, valinit=theta2_0)
+slider_g = Slider(ax_g, 'g (m/s²)', 1, 20, valinit=params["g"])
+slider_L1 = Slider(ax_L1, 'L1 (m)', 0.5, 3.0, valinit=params["L1"])
+slider_L2 = Slider(ax_L2, 'L2 (m)', 0.5, 3.0, valinit=params["L2"])
+slider_m1 = Slider(ax_m1, 'm1 (m)', 0.1, 5.0, valinit=params["m1"])
+slider_m2 = Slider(ax_m2, 'm2 (m)', 0.1, 5.0, valinit=params["m2"])
+slider_t1 = Slider(ax_t1, 'θ1₀ (rad)', -np.pi, np.pi, valinit=params["theta1_0"])
+slider_t2 = Slider(ax_t2, 'θ2₀ (rad)', -np.pi, np.pi, valinit=params["theta2_0"])
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(val):
-    global g, L1, L2, m1, m2, theta1_0, theta2_0
+    params["g"] = slider_g.val
+    params["L1"] = slider_L1.val
+    params["L2"] = slider_L2.val
+    params["m1"] = slider_m1.val
+    params["m2"] = slider_m2.val
+    params["theta1_0"] = slider_t1.val
+    params["theta2_0"] = slider_t2.val
+
     global tp, th1, om1, th2, om2, x1, y1, x2, y2
-
-    g = slider_g.val
-    L1 = slider_L1.val
-    L2 = slider_L2.val
-    m1 = slider_m1.val
-    m2 = slider_m2.val
-    theta1_0 = slider_t1.val
-    theta2_0 = slider_t2.val
-
-    tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(theta1_0, 0, theta2_0, 0)
+    tp, th1, om1, th2, om2, x1, y1, x2, y2 = solve(params)
 
     update_pendulum_axis()
 
