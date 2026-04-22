@@ -1,222 +1,164 @@
-import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
-# =========================================================
-# 🔷 1. SISTEMA FÍSICO (GENÉRICO)
-# =========================================================
-def f(r, t, p):
-    """
-    Sistema genérico:
-    r = estado vetorial
-    p = parâmetros (dict)
-    """
+# ===========================
+# PARÂMETROS (FONTE ÚNICA)
+# ===========================
+params = {
+    "param1": 1.0,
+    "param2": 0.5,
+    "x0": 1.0,
+    "v0": 0.0
+}
 
-    x = r[0]
-    v = r[1]
+# ===========================
+# SISTEMA DINÂMICO
+# ===========================
+def f(r, t, params):
+    x, v = r
 
-    # EXEMPLO: oscilador harmônico
-    k = p["k"]
-    m = p["m"]
+    p1 = params["param1"]
+    p2 = params["param2"]
 
-    a = -(k / m) * x
+    dx = v
+    dv = -p1 * x - p2 * v
 
-    return np.array([v, a], float)
+    return np.array([dx, dv], float)
 
-
-# =========================================================
-# 🔷 2. RK4 GENÉRICO
-# =========================================================
-def RK4(f, t0, t1, N, r0, p):
-    h = (t1 - t0) / N
-    t = np.linspace(t0, t1, N + 1)
-
+# ===========================
+# RK4 (GENÉRICO)
+# ===========================
+def RK4(f, a, b, N, r0, params):
+    h = (b - a) / N
+    tp = np.linspace(a, b, N + 1)
     r = np.array(r0, float)
-    sol = np.zeros((N + 1, len(r0)))
-    sol[0] = r
+
+    x_list, v_list = [r[0]], [r[1]]
 
     for i in range(N):
-        k1 = h * f(r, t[i], p)
-        k2 = h * f(r + 0.5 * k1, t[i] + 0.5 * h, p)
-        k3 = h * f(r + 0.5 * k2, t[i] + 0.5 * h, p)
-        k4 = h * f(r + k3, t[i] + h, p)
+        t = tp[i]
 
-        r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
-        sol[i + 1] = r
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
-    return t, sol
+        r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
+        x_list.append(r[0])
+        v_list.append(r[1])
 
-# =========================================================
-# 🔷 3. POSTPROCESSAMENTO
-# =========================================================
-def postprocess(sol, p):
-    x = sol[:, 0]
-    v = sol[:, 1]
+    return tp, np.array(x_list), np.array(v_list)
 
-    return {
-        "x": x,
-        "v": v
-    }
-
-
-# =========================================================
-# 🔷 4. SOLVER
-# =========================================================
-def solve(p):
-    t, sol = RK4(f, 0, p["t_max"], p["N"], p["r0"], p)
-    obs = postprocess(sol, p)
-    return t, sol, obs
-
-
-# =========================================================
-# 🔷 5. FIGURA
-# =========================================================
-def make_figure():
-    fig, ax = plt.subplots(figsize=(10, 5))
-    plt.subplots_adjust(left=0.25, bottom=0.3)
-
-    ax.set_title("Simulação Genérica")
-    ax.set_xlabel("t")
-    ax.set_ylabel("x")
-
-    line, = ax.plot([], [], lw=2)
-
-    return fig, ax, line
-
-
-# =========================================================
-# 🔷 6. HUD
-# =========================================================
-def make_hud(fig):
-    return fig.text(
-        0.02, 0.6,
-        "",
-        fontsize=10,
-        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8)
+# ===========================
+# SOLVER CENTRAL
+# ===========================
+def solve(params):
+    tp, x, v = RK4(
+        f,
+        0, 10, 500,
+        [params["x0"], params["v0"]],
+        params
     )
 
+    return tp, x, v
 
-def update_hud(hud, info):
-    text = "\n".join([f"{k}: {v:.3f}" for k, v in info.items()])
-    hud.set_text(text)
+# ===========================
+# ESCALA DO SISTEMA
+# ===========================
+def update_axis():
+    ax_sys.set_xlim(-2, 2)
+    ax_sys.set_ylim(-2, 2)
 
+# ===========================
+# INICIALIZAÇÃO
+# ===========================
+tp, x, v = solve(params)
 
-# =========================================================
-# 🔷 7. ANIMAÇÃO
-# =========================================================
-def make_update(line, t, obs, hud, params, ax):
+# ===========================
+# FIGURA
+# ===========================
+fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
+plt.subplots_adjust(left=0.25, bottom=0.35)
 
-    def update(frame):
-        i = frame
+update_axis()
 
-        line.set_data(t[:i], obs["x"][:i])
+ax_sys.set_title("Sistema físico")
 
-        # ---------------------------
-        # ESCALA DINÂMICA (PADRÃO ATUAL)
-        # ---------------------------
-        if i > 5:
-            ymin = np.min(obs["x"][:i])
-            ymax = np.max(obs["x"][:i])
+point, = ax_sys.plot([], [], 'o')
 
-            if abs(ymax - ymin) < 1e-6:
-                ymin -= 1
-                ymax += 1
+# ---------------------------
+# GRÁFICO
+# ---------------------------
+ax_plot.set_xlim(0, tp[-1])
+ax_plot.set_title("Evolução temporal")
 
-            margin = 0.2 * (ymax - ymin)
-            ax.set_ylim(ymin - margin, ymax + margin)
+line_x, = ax_plot.plot([], [], label="x(t)")
+line_v, = ax_plot.plot([], [], label="v(t)")
+ax_plot.legend()
 
-        info = {
-            "x": obs["x"][i],
-            "v": obs["v"][i],
-        }
+# ===========================
+# UPDATE ANIMAÇÃO
+# ===========================
+def update(frame):
+    i = frame
 
-        update_hud(hud, info)
+    point.set_data([x[i]], [0])
 
-        return (line, hud)
+    line_x.set_data(tp[:i], x[:i])
+    line_v.set_data(tp[:i], v[:i])
 
-    return update
+    if i > 10:
+        ymin = min(np.min(x[:i]), np.min(v[:i]))
+        ymax = max(np.max(x[:i]), np.max(v[:i]))
+        margin = 0.2 * (ymax - ymin + 1e-6)
+        ax_plot.set_ylim(ymin - margin, ymax + margin)
 
+    return point, line_x, line_v
 
-# =========================================================
-# 🔷 8. SLIDERS
-# =========================================================
-def make_slider(ax, label, vmin, vmax, valinit):
-    return Slider(ax, label, vmin, vmax, valinit=valinit)
+ani = FuncAnimation(fig, update, frames=len(tp), interval=20)
 
+# ===========================
+# SLIDERS
+# ===========================
+ax_p1 = plt.axes([0.25, 0.25, 0.65, 0.03])
+ax_p2 = plt.axes([0.25, 0.20, 0.65, 0.03])
+ax_x0 = plt.axes([0.25, 0.15, 0.65, 0.03])
+ax_v0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 
-# =========================================================
-# 🔷 9. MAIN
-# =========================================================
-if __name__ == "__main__":
+slider_p1 = Slider(ax_p1, 'param1', 0.1, 10, valinit=params["param1"])
+slider_p2 = Slider(ax_p2, 'param2', 0.0, 5, valinit=params["param2"])
+slider_x0 = Slider(ax_x0, 'x0', -2, 2, valinit=params["x0"])
+slider_v0 = Slider(ax_v0, 'v0', -5, 5, valinit=params["v0"])
 
-    # ---------------------------
-    # PARÂMETROS
-    # ---------------------------
-    params = {
-        "k": 10.0,
-        "m": 1.0,
-        "t_max": 20,
-        "N": 1000,
-        "r0": [1.0, 0.0]
-    }
+# ===========================
+# UPDATE SLIDERS
+# ===========================
+def update_sliders(_):
+    params["param1"] = slider_p1.val
+    params["param2"] = slider_p2.val
+    params["x0"] = slider_x0.val
+    params["v0"] = slider_v0.val
 
-    # ---------------------------
-    # SOLUÇÃO INICIAL
-    # ---------------------------
-    t, sol, obs = solve(params)
+    global tp, x, v
+    tp, x, v = solve(params)
 
-    # ---------------------------
-    # FIGURA
-    # ---------------------------
-    fig, ax, line = make_figure()
-    hud = make_hud(fig)
+    update_axis()
 
-    # ---------------------------
-    # ANIMAÇÃO
-    # ---------------------------
-    update = make_update(line, t, obs, hud, params, ax)
+    ani.event_source.stop()
+    ani.frame_seq = ani.new_frame_seq()
+    ani.event_source.start()
 
-    ani = FuncAnimation(
-        fig,
-        update,
-        frames=len(t),
-        init_func=lambda: line.set_data([], []),
-        interval=20,
-        blit=False,
-        cache_frame_data=False
-    )
+    fig.canvas.draw_idle()
 
-    # ---------------------------
-    # SLIDERS
-    # ---------------------------
-    ax_k = plt.axes([0.25, 0.2, 0.65, 0.03])
-    ax_m = plt.axes([0.25, 0.1, 0.65, 0.03])
+slider_p1.on_changed(update_sliders)
+slider_p2.on_changed(update_sliders)
+slider_x0.on_changed(update_sliders)
+slider_v0.on_changed(update_sliders)
 
-    slider_k = make_slider(ax_k, "k", 1, 50, params["k"])
-    slider_m = make_slider(ax_m, "m", 0.1, 5, params["m"])
-
-    def rebuild(val):
-        global t, sol, obs, ani
-
-        t, sol, obs = solve(params)
-
-        ani.event_source.stop()
-        ani.frame_seq = ani.new_frame_seq()
-        ani.event_source.start()
-
-        fig.canvas.draw_idle()
-
-    def update_sliders(val):
-        params["k"] = slider_k.val
-        params["m"] = slider_m.val
-        rebuild(val)
-
-    slider_k.on_changed(update_sliders)
-    slider_m.on_changed(update_sliders)
-
-    plt.show()
+plt.show()
