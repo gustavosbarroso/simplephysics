@@ -19,7 +19,7 @@ The project explores a wide range of topics in physics through computational app
 
 ## 📦 Implemented Systems
 
-### 1. Damped Pendulum
+### 1. Damped Pendulum and Simple Pendulum
 
 Nonlinear pendulum with damping:
 
@@ -30,7 +30,15 @@ Run:
 ```bash
 python scripts/pendulo_amortecido.py
 ```
+When we have b=0, we have the simple pendulum case, that is the described by the following differential equation:
 
+θ'' + (g/L) sin(θ) = 0
+
+Run:
+
+```bash
+python scripts/Pendulo_simples.py 
+```
 ---
 
 ### 2. Double Pendulum (Chaotic System)
