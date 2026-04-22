@@ -9,21 +9,27 @@ from matplotlib.widgets import Slider
 # ---------------------------
 # PARÂMETROS
 # ---------------------------
-R = 2.0
-C = 1.0
+params = {
+    "R": 2.0,
+    "C": 1.0,
+    "q0": 1.0
+}
 
 # ---------------------------
 # SISTEMA RC
 # ---------------------------
-def f(r, t):
+def f(r, t, params):
     q = r[0]
+    R = params["R"]
+    C = params["C"]
+
     dqdt = -(1/(R*C)) * q
     return np.array([dqdt], float)
 
 # ---------------------------
 # RK4
 # ---------------------------
-def RK4(f, a, b, N, r):
+def RK4(f, a, b, N, r, params):
     h = (b - a) / N
     tp = np.linspace(a, b, N + 1)
     r = np.array(r, float)
@@ -33,27 +39,29 @@ def RK4(f, a, b, N, r):
     for k in range(N):
         t = tp[k]
 
-        k1 = h * f(r, t)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h)
-        k4 = h * f(r + k3, t + h)
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
         r = r + (k1 + 2*k2 + 2*k3 + k4)/6
         q_list.append(r[0])
 
     q_list = np.array(q_list)
+
+    R = params["R"]
+    C = params["C"]
     i_list = -(1/(R*C)) * q_list
 
     return tp, q_list, i_list
 
-def solve(q0):
-    return RK4(f, 0, 10, 500, [q0])
+def solve(params):
+    return RK4(f, 0, 10, 500, [params["q0"]], params)
 
 # ---------------------------
 # INICIAIS
 # ---------------------------
-q0 = 1.0
-tp, q, i_vals = solve(q0)
+tp, q, i_vals = solve(params)
 
 # ---------------------------
 # FIGURA
@@ -72,7 +80,6 @@ ax_circ.set_title("Circuito RC com elétrons")
 x0, x1 = 2, 8
 y0, y1 = 2, 4
 
-# fios
 ax_circ.plot([x0, x1], [y0, y0], lw=2)
 ax_circ.plot([x1, x1], [y0, y1], lw=2)
 ax_circ.plot([x1, x0], [y1, y1], lw=2)
@@ -156,8 +163,8 @@ def update(frame):
     line_i.set_data(tp[:frame], i_vals[:frame])
 
     text_info.set_text(
-        f"R = {R:.2f} Ω\n"
-        f"C = {C:.2f} F\n\n"
+        f"R = {params['R']:.2f} Ω\n"
+        f"C = {params['C']:.2f} F\n\n"
         f"q = {q[frame]:.3f} C\n"
         f"i = {i_vals[frame]:.3f} A\n"
         f"t = {tp[frame]:.2f} s"
@@ -174,21 +181,21 @@ ax_R = plt.axes([0.2, 0.2, 0.6, 0.03])
 ax_C = plt.axes([0.2, 0.15, 0.6, 0.03])
 ax_q0 = plt.axes([0.2, 0.10, 0.6, 0.03])
 
-slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=R)
-slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=C)
-slider_q0 = Slider(ax_q0, 'q0 (C)', -2, 2, valinit=q0)
+slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=params["R"])
+slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=params["C"])
+slider_q0 = Slider(ax_q0, 'q0 (C)', -2, 2, valinit=params["q0"])
 
 # ---------------------------
 # UPDATE SLIDERS
 # ---------------------------
 def update_sliders(val):
-    global R, C, q0, tp, q, i_vals, electron_pos
+    global tp, q, i_vals, electron_pos
 
-    R = slider_R.val
-    C = slider_C.val
-    q0 = slider_q0.val
+    params["R"] = slider_R.val
+    params["C"] = slider_C.val
+    params["q0"] = slider_q0.val
 
-    tp, q, i_vals = solve(q0)
+    tp, q, i_vals = solve(params)
 
     # reset elétrons
     electron_pos = np.linspace(0, 1, num_e)
