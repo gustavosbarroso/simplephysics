@@ -1,45 +1,71 @@
-# =========================================================
-# 🔷 2. RK4 GENÉRICO
-# =========================================================
-def RK4(f, t0, t1, N, r0, p):
-    h = (t1 - t0) / N
-    t = np.linspace(t0, t1, N + 1)
-
+# ===========================
+# RK4 (GENÉRICO)
+# ===========================
+def RK4(f, a, b, N, r0, params):
+    h = (b - a) / N
+    tp = np.linspace(a, b, N + 1)
     r = np.array(r0, float)
-    sol = [r.copy()]
+
+    x_list, v_list = [r[0]], [r[1]]
 
     for i in range(N):
-        k1 = h * f(r, t[i], p)
-        k2 = h * f(r + 0.5*k1, t[i] + 0.5*h, p)
-        k3 = h * f(r + 0.5*k2, t[i] + 0.5*h, p)
-        k4 = h * f(r + k3, t[i] + h, p)
+        t = tp[i]
 
-        r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
-        sol.append(r.copy())
+        k1 = h * f(r, t, params)
+        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
+        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k4 = h * f(r + k3, t + h, params)
 
-    return t, np.array(sol)
+        r = r + (k1 + 2*k2 + 2*k3 + k4)/6
 
+        x_list.append(r[0])
+        v_list.append(r[1])
 
-# =========================================================
-# 🔷 3. POSTPROCESS (TRANSFORMA ESTADO → OBSERVÁVEIS)
-# =========================================================
-def postprocess(sol, p):
-    """
-    Aqui você transforma r(t) em coisas plotáveis.
-    """
-    x = sol[:, 0]
-    v = sol[:, 1]
+    return tp, np.array(x_list), np.array(v_list)
 
-    return {
-        "x": x,
-        "v": v
-    }
+# ===========================
+# SOLVER CENTRAL
+# ===========================
+def solve(params):
+    tp, x, v = RK4(
+        f,
+        0, 10, 500,
+        [params["x0"], params["v0"]],
+        params
+    )
 
+    return tp, x, v
 
-# =========================================================
-# 🔷 4. SOLVER
-# =========================================================
-def solve(p):
-    t, sol = RK4(f, 0, p["t_max"], p["N"], p["r0"], p)
-    obs = postprocess(sol, p)
-    return t, sol, obs
+# ===========================
+# ESCALA DO SISTEMA
+# ===========================
+def update_axis():
+    ax_sys.set_xlim(-2, 2)
+    ax_sys.set_ylim(-2, 2)
+
+# ===========================
+# INICIALIZAÇÃO
+# ===========================
+tp, x, v = solve(params)
+
+# ===========================
+# FIGURA
+# ===========================
+fig, (ax_sys, ax_plot) = plt.subplots(1, 2, figsize=(12,5))
+plt.subplots_adjust(left=0.25, bottom=0.35)
+
+update_axis()
+
+ax_sys.set_title("Sistema físico")
+
+point, = ax_sys.plot([], [], 'o')
+
+# ---------------------------
+# GRÁFICO
+# ---------------------------
+ax_plot.set_xlim(0, tp[-1])
+ax_plot.set_title("Evolução temporal")
+
+line_x, = ax_plot.plot([], [], label="x(t)")
+line_v, = ax_plot.plot([], [], label="v(t)")
+ax_plot.legend()
