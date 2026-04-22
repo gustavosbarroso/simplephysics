@@ -238,13 +238,11 @@ All simulations include sliders for real-time adjustment of physical parameters 
 
 ---
 
-## 🚀 Future Improvements
+## Project Evolution
 
-* Phase space visualization
-* Energy tracking
-* Chaos diagnostics (Poincaré sections, Lyapunov exponents)
-
----
+- Initial version: independent simulations using global variables
+- Current stage: refactoring to a parameter-based architecture (no globals)
+- Next step: integration into a unified interface (Flask/Plotly)
 
 ## 🛠️ Development
 
