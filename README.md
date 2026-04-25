@@ -246,6 +246,7 @@ Python, using:
 ## 👨‍🔬 Author
 
 Gustavo Sobreira Barroso
+
 Physics Engineering student
 
 ---
