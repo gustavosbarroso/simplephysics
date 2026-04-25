@@ -96,8 +96,8 @@ ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
 ax_plot.set_ylabel("θ(t), ω(t)")
 
-line_th, = ax_plot.plot([], [], label="θ(t)")
-line_om, = ax_plot.plot([], [], label="ω(t)")
+line_th, = ax_plot.plot([], [], label="θ(t) - rad")
+line_om, = ax_plot.plot([], [], label="ω(t) - rad/s")
 ax_plot.legend()
 
 def update_axes_plot(i):
