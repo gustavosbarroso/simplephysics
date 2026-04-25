@@ -2,7 +2,7 @@
 
 This repository contains numerical simulations of physical systems using the 4th-order Runge-Kutta (RK4) method and other numerical integrators, combined with interactive visualization.
 
-The project explores a wide range of topics in physics through computational approaches, emphasizing both numerical accuracy and physical interpretation.
+The project explores a wide range of topics in physics through computational approaches, emphasizing both **numerical accuracy** and **physical interpretation**.
 
 ---
 
@@ -10,6 +10,7 @@ The project explores a wide range of topics in physics through computational app
 
 * Numerical integration of ordinary differential equations (ODEs)
 * RK4 implementation for general dynamical systems
+* Use of modern solvers (`solve_ivp`, SciPy)
 * Simulation of nonlinear and coupled systems
 * Real-time animation using matplotlib
 * Interactive parameter control via sliders
@@ -30,26 +31,24 @@ Run:
 ```bash
 python scripts/pendulo_amortecido.py
 ```
-When we have b=0, we have the simple pendulum case, that is the described by the following differential equation:
+
+Simple pendulum (b = 0):
 
 θ'' + (g/L) sin(θ) = 0
 
 Run:
 
 ```bash
-python scripts/Pendulo_simples.py 
+python scripts/Pendulo_simples.py
 ```
+
 ---
 
 ### 2. Double Pendulum (Chaotic System)
 
-The double pendulum is a classical nonlinear system exhibiting chaotic behavior.
+θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ] / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
 
-The equations of motion are:
-
-θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]/ [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
-
-θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁)+ θ₂'²L₂m₂cos(θ₁ - θ₂)) ]/ [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
+θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁) + θ₂'²L₂m₂cos(θ₁ - θ₂)) ] / [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
 
 Run:
 
@@ -60,8 +59,6 @@ python scripts/Pendulo_duplo.py
 ---
 
 ### 3. Coupled Mass-Spring Chain
-
-1D system of coupled oscillators:
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 
@@ -87,8 +84,6 @@ python scripts/cadeia_interferencia.py
 
 ### 5. Gravitational Two-Body Problem
 
-Two bodies interacting via Newtonian gravity:
-
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 
 r₂'' = G m₁ (r₁ − r₂) / |r₁ − r₂|³
@@ -105,11 +100,7 @@ python scripts/dois_corpos.py
 
 ### 6. RLC Circuit Simulation
 
-Electrical circuit driven by an AC voltage source:
-
 V(t) = V₀ cos(ωt)
-
-Equations of motion:
 
 q'(t) = i
 
@@ -125,8 +116,6 @@ python scripts/circuito_rlc.py
 
 ### 7. Spring-Mass Oscillator (with Gravity)
 
-Mass-spring system under gravity:
-
 m y'' + k y = mg
 
 Run:
@@ -139,8 +128,6 @@ python scripts/Massa-mola-gravidade.py
 
 ### 8. RC Circuit
 
-First-order system analogous to an overdamped oscillator:
-
 q' + (1/RC) q = 0
 
 Run:
@@ -151,23 +138,21 @@ python scripts/circuito_rc.py
 
 ---
 
-### 9. Kapitiza's Pendulum
+### 9. Kapitza's Pendulum
 
-Fundamental to nonlinear dynamics, this simulation describes the dynamics of a pendulum whose pivot oscillates vertically according to y(t)=Acos(vt)
+y(t) = A cos(ωt)
 
-Lθ''=-gsin(θ) + Av²cos(vt)sin(θ)
+Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 
 Run:
 
 ```bash
 python scripts/Kapitiza_pendulo.py
 ```
----
+
 ---
 
 ### 10. Driven Pendulum on Oscillating Cart
-
-Pendulum attached to a cart with prescribed motion:
 
 x(t) = A cos(ωt)
 
@@ -180,26 +165,24 @@ python scripts/Driven_cart_pendulum.py
 ```
 
 ---
----
-### **11. Projectile Motion with Air Resistance**
 
-Projectile motion in 2D with gravity and quadratic air resistance proportional to the velocity magnitude.
+### 11. Projectile Motion with Air Resistance
 
-Equations of motion:
+x'(t) = vₓ
 
-x'(t) = v_x
+y'(t) = vᵧ
 
-y'(t) = v_y
+vₓ'(t) = -(k/m) · v · vₓ
 
-v_x'(t) = -(k/m) · v · v_x
+vᵧ'(t) = -g -(k/m) · v · vᵧ
 
-v_y'(t) = -g -(k/m) · v · v_y
-
-v = √(v_x² + v_y²)
+v = √(vₓ² + vᵧ²)
 
 Run:
 
+```bash
 python scripts/Launch.py
+```
 
 ---
 
@@ -216,7 +199,11 @@ python scripts/<script_name>.py
 
 ## 🎛️ Interactive Controls
 
-All simulations include sliders for real-time adjustment of physical parameters and initial conditions.
+All simulations include:
+
+* Sliders for real-time parameter adjustment
+* Dynamic updates of trajectories and states
+* Visualization of system evolution
 
 ---
 
@@ -224,8 +211,8 @@ All simulations include sliders for real-time adjustment of physical parameters 
 
 * Systems modeled as ODEs
 * Conversion to first-order systems
-* Numerical integration via RK4
-* Dynamic visualization
+* Numerical integration via RK4 and SciPy solvers
+* Dynamic visualization and analysis
 
 ---
 
@@ -238,11 +225,13 @@ All simulations include sliders for real-time adjustment of physical parameters 
 
 ---
 
-## Project Evolution
+## 🚧 Project Evolution
 
-- Initial version: independent simulations using global variables
-- Current stage: refactoring to a parameter-based architecture (no globals)
-- Next step: integration into a unified interface (Flask/Plotly)
+* Initial version: independent simulations using global variables
+* Current stage: refactoring to a parameter-based architecture
+* Next step: integration into a unified interface (Flask + Plotly)
+
+---
 
 ## 🛠️ Development
 
@@ -257,5 +246,10 @@ Python, using:
 ## 👨‍🔬 Author
 
 Gustavo Sobreira Barroso
-
 Physics Engineering student
+
+---
+
+## 📄 License
+
+MIT License
