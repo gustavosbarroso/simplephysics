@@ -62,6 +62,7 @@ Run:
 python scripts/pendulo_amortecido.py
 
 Simple pendulum:
+
 θ'' + (g/L) sin(θ) = 0  
 
 Run:
@@ -72,8 +73,13 @@ python scripts/Pendulo_simples.py
 
 Highly nonlinear coupled system exhibiting chaos.
 
+θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ] / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
+
+θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁) + θ₂'²L₂m₂cos(θ₁ - θ₂)) ] / [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
+
 Run:
 python scripts/Pendulo_duplo.py
+
 
 
 🧵 3. Coupled Oscillators (Mass-Spring Chain)
@@ -173,6 +179,7 @@ git clone https://github.com/gustavosbarroso/simplephysics.git
 cd simplephysics
 pip install -r requirements.txt
 python scripts/<script_name>.py
+
 
 
 🎛️ Interactive System Design
