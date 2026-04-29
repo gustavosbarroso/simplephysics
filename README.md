@@ -4,7 +4,8 @@ This repository contains numerical simulations of physical systems using the 4th
 
 The project explores a wide range of topics in physics through computational approaches, emphasizing both numerical accuracy and physical interpretation, including dynamical systems and electromagnetic field simulations.
 
-Features
+FEATURES
+
 Numerical integration of ordinary differential equations (ODEs)
 RK4 implementation for general dynamical systems
 Use of modern solvers (SciPy solve_ivp)
@@ -15,9 +16,9 @@ Real-time animation using matplotlib
 Interactive parameter control via sliders
 Visualization of trajectories, phase space, and vector fields
 
-Implemented Systems
+IMPLEMENTED SYSTEMS
 
-Damped Pendulum and Simple Pendulum
+DAMPED PENDULUM AND SIMPLE PENDULUM
 
 Nonlinear pendulum with damping:
 
@@ -33,7 +34,7 @@ Simple pendulum (b = 0):
 Run:
 python scripts/Pendulo_simples.py
 
-Double Pendulum (Chaotic System)
+DOUBLE PENDULUM (CHAOTIC SYSTEM)
 
 θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]
 / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
@@ -44,21 +45,21 @@ Double Pendulum (Chaotic System)
 Run:
 python scripts/Pendulo_duplo.py
 
-Coupled Mass-Spring Chain
+COUPLED MASS-SPRING CHAIN
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 
 Run:
 python scripts/cadeia_massas.py
 
-Wave Interference in Mass-Spring Chain
+WAVE INTERFERENCE IN MASS-SPRING CHAIN
 
 Simulation of wave propagation and interference using Gaussian perturbations.
 
 Run:
 python scripts/cadeia_interferencia.py
 
-Gravitational Two-Body Problem
+GRAVITATIONAL TWO-BODY PROBLEM
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 r₂'' = G m₁ (r₁ − r₂) / |r₂ − r₁|³
@@ -68,7 +69,7 @@ This system conserves total energy and angular momentum.
 Run:
 python scripts/dois_corpos.py
 
-RLC Circuit Simulation
+RLC CIRCUIT SIMULATION
 
 V(t) = V₀ cos(ωt)
 
@@ -78,21 +79,21 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 python scripts/circuito_rlc.py
 
-Spring-Mass Oscillator (with Gravity)
+SPRING-MASS OSCILLATOR (WITH GRAVITY)
 
 m y'' + k y = mg
 
 Run:
 python scripts/Massa-mola-gravidade.py
 
-RC Circuit
+RC CIRCUIT
 
 q' + (1/RC) q = 0
 
 Run:
 python scripts/circuito_rc.py
 
-Kapitza's Pendulum
+KAPITZA'S PENDULUM
 
 y(t) = A cos(ωt)
 
@@ -101,7 +102,7 @@ Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 Run:
 python scripts/Kapitiza_pendulo.py
 
-Driven Pendulum on Oscillating Cart
+DRIVEN PENDULUM ON OSCILLATING CART
 
 x(t) = A cos(ωt)
 
@@ -110,7 +111,7 @@ x(t) = A cos(ωt)
 Run:
 python scripts/Driven_cart_pendulum.py
 
-Projectile Motion with Air Resistance
+PROJECTILE MOTION WITH AIR RESISTANCE
 
 x'(t) = vₓ
 y'(t) = vᵧ
@@ -123,7 +124,7 @@ v = √(vₓ² + vᵧ²)
 Run:
 python scripts/Launch.py
 
-Electromagnetic Field Simulations
+ELECTROMAGNETIC FIELD SIMULATIONS
 
 Electric field (Coulomb law):
 
@@ -133,7 +134,7 @@ Examples:
 python fields_scripts/Eletric_field/Point_charge.py
 python fields_scripts/Eletric_field/Conducting_sphere.py
 
-Magnetic Field (Biot–Savart law)
+Magnetic Field (Biot–Savart law):
 
 dB = (μ₀/4π) (I dℓ × r̂) / r²
 
@@ -143,16 +144,17 @@ python fields_scripts/Magnetic_field/Finite_wire.py
 python fields_scripts/Magnetic_field/Infinite_cilyndrical_wire.py
 python fields_scripts/Magnetic_field/Finite_solenoid.py
 
-Field Simulation Structure
+FIELD SIMULATION STRUCTURE
 
 fields_scripts/
 ├── Eletric_field/
 ├── Magnetic_field/
 
 Pattern:
+
 Field function → Grid → Normalization → Streamplot → Interactivity
 
-How to Run
+HOW TO RUN
 
 git clone https://github.com/gustavosbarroso/simplephysics.git
 
@@ -165,14 +167,14 @@ python scripts/<script_name>.py
 or:
 python fields_scripts/<category>/<script_name>.py
 
-Interactive Controls
+INTERACTIVE CONTROLS
 
 Sliders for real-time parameter adjustment
 Dynamic updates of trajectories and states
 Visualization of system evolution
 Real-time recomputation
 
-Approach
+APPROACH
 
 Systems modeled as ODEs or continuous fields
 Conversion to first-order systems
@@ -180,7 +182,7 @@ Numerical integration via RK4 and SciPy solvers
 Spatial discretization for field problems
 Dynamic visualization and analysis
 
-Physical Connections
+PHYSICAL CONNECTIONS
 
 Classical mechanics
 Electrical circuits
@@ -189,14 +191,14 @@ Nonlinear dynamics
 Chaos theory
 Wave phenomena
 
-Project Evolution
+PROJECT EVOLUTION
 
 Initial version: independent simulations using global variables
 Current stage: modular and parameter-based architecture
 Includes: ODE systems and field simulations
 Next step: unified simulation interface (Flask + Plotly)
 
-Development
+DEVELOPMENT
 
 Python, using:
 
@@ -205,11 +207,13 @@ Matplotlib
 SciPy
 IPyWidgets
 
-Author
+AUTHOR
 
 Gustavo Sobreira Barroso
 Physics Engineering Student
 
-License
+LICENSE
+
+MIT License
 
 MIT License
