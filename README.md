@@ -194,8 +194,11 @@ Wave phenomena
 🚧 PROJECT EVOLUTION
 
 Initial version: independent simulations using global variables
+
 Current stage: modular and parameter-based architecture
+
 Includes: ODE systems and field simulations
+
 Next step: unified simulation interface (Flask + Plotly)
 
 🛠️ DEVELOPMENT
