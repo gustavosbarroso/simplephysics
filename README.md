@@ -52,14 +52,14 @@ m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 Run:
 python scripts/cadeia_massas.py
 
-WAVE INTERFERENCE IN MASS-SPRING CHAIN
+IV.WAVE INTERFERENCE IN MASS-SPRING CHAIN
 
 Simulation of wave propagation and interference using Gaussian perturbations.
 
 Run:
 python scripts/cadeia_interferencia.py
 
-IV.GRAVITATIONAL TWO-BODY PROBLEM
+V.GRAVITATIONAL TWO-BODY PROBLEM
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 r₂'' = G m₁ (r₁ − r₂) / |r₂ − r₁|³
@@ -69,7 +69,7 @@ This system conserves total energy and angular momentum.
 Run:
 python scripts/dois_corpos.py
 
-V.RLC CIRCUIT SIMULATION
+VI.RLC CIRCUIT SIMULATION
 
 V(t) = V₀ cos(ωt)
 
@@ -79,14 +79,14 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 python scripts/circuito_rlc.py
 
-VI.SPRING-MASS OSCILLATOR (WITH GRAVITY)
+VII.SPRING-MASS OSCILLATOR (WITH GRAVITY)
 
 m y'' + k y = mg
 
 Run:
 python scripts/Massa-mola-gravidade.py
 
-VII.RC CIRCUIT
+VIII.RC CIRCUIT
 
 q' + (1/RC) q = 0
 
