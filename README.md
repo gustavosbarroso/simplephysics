@@ -18,8 +18,7 @@ The project explores a wide range of topics in physics through computational app
 - Interactive parameter control via sliders  
 - Visualization of trajectories, phase space, and vector fields  
 
----
-
+----
 ## Implemented Systems
 
 ### Damped Pendulum and Simple Pendulum
@@ -40,6 +39,7 @@ Simple pendulum (b = 0):
 Run:
 
 python scripts/Pendulo_simples.py
+----
 
 ### Double Pendulum (Chaotic System)
 
@@ -52,7 +52,7 @@ python scripts/Pendulo_simples.py
 Run:
 
 python scripts/Pendulo_duplo.py
-
+---
 ###Coupled Mass-Spring Chain
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
@@ -67,6 +67,7 @@ Simulation of wave propagation and interference using Gaussian perturbations.
 Run:
 
 python scripts/cadeia_interferencia.py
+----
 
 ###Gravitational Two-Body Problem
 
@@ -79,6 +80,7 @@ Run:
 
 python scripts/dois_corpos.py
 
+---
 ###RLC Circuit Simulation
 
 V(t) = V₀ cos(ωt)
@@ -89,6 +91,7 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 
 python scripts/circuito_rlc.py
+---
 
 ###Spring-Mass Oscillator (with Gravity)
 
@@ -97,7 +100,7 @@ m y'' + k y = mg
 Run:
 
 python scripts/Massa-mola-gravidade.py
-
+---
 ###RC Circuit
 
 q' + (1/RC) q = 0
@@ -105,7 +108,7 @@ q' + (1/RC) q = 0
 Run:
 
 python scripts/circuito_rc.py
-
+---
 ###Kapitza's Pendulum
 
 y(t) = A cos(ωt)
@@ -115,7 +118,7 @@ Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 Run:
 
 python scripts/Kapitiza_pendulo.py
-
+---
 ###Driven Pendulum on Oscillating Cart
 
 x(t) = A cos(ωt)
@@ -125,7 +128,7 @@ x(t) = A cos(ωt)
 Run:
 
 python scripts/Driven_cart_pendulum.py
-
+---
 ###Projectile Motion with Air Resistance
 
 x'(t) = vₓ
@@ -139,7 +142,7 @@ v = √(vₓ² + vᵧ²)
 Run:
 
 python scripts/Launch.py
-
+---
 ###Electromagnetic Field Simulations
 
 Electric and magnetic field systems are computed via discretization and numerical integration.
@@ -152,7 +155,7 @@ Examples:
 
 python fields_scripts/Eletric_field/Point_charge.py
 python fields_scripts/Eletric_field/Conducting_sphere.py
-
+---
 ###Magnetic field (Biot–Savart law):
 
 dB = (μ₀/4π) (I dℓ × r̂) / r²
@@ -171,7 +174,7 @@ fields_scripts/
 Pattern:
 
 Field function → Grid → Normalization → Streamplot → Interactivity
-
+---
 How to Run
 git clone https://github.com/gustavosbarroso/simplephysics.git
 cd simplephysics
