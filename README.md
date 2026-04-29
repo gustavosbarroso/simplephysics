@@ -1,257 +1,257 @@
 🔬 simplephysics
+# 🔬 simplephysics
 
-This repository contains computational physics simulations of classical and electromagnetic systems using:
+This repository contains numerical simulations of physical systems using the 4th-order Runge-Kutta (RK4) method, numerical integration techniques, and interactive visualization.
 
-- 4th-order Runge-Kutta (RK4)
-- Numerical integration (Simpson method)
-- Discrete field solvers
-- Interactive visualization (Matplotlib + widgets)
+The project explores a wide range of topics in physics through computational approaches, emphasizing both numerical accuracy and physical interpretation, including dynamical systems and electromagnetic field simulations.
 
-The goal is to build a modular physics simulation framework, where each system follows a consistent structure:
+---
 
-Equations → Numerical method → Visualization → Interactivity
+## ⚙️ Features
 
-⚙️ Core Features
+- Numerical integration of ordinary differential equations (ODEs)  
+- RK4 implementation for general dynamical systems  
+- Use of modern solvers (SciPy `solve_ivp`)  
+- Simpson integration for continuous field distributions  
+- Simulation of nonlinear and coupled systems  
+- Discrete evaluation of electromagnetic fields on grids  
+- Real-time animation using matplotlib  
+- Interactive parameter control via sliders  
+- Visualization of trajectories, phase space, and vector fields  
 
-🧮 Numerical Methods
-- RK4 integration for dynamical systems
-- Simpson numerical integration for field problems
-- ODE → first-order system reduction
-- Discrete evaluation of continuous fields
+---
 
-📊 Visualization
-- Real-time matplotlib animation
-- Streamplot field visualization (E, B fields)
-- Phase space / trajectory plots
-- 1D + 2D coupled visual outputs
+## 📦 Implemented Systems
 
-🎛️ Interactivity
-- Slider-based parameter control
-- Live system updates (update(val) pattern)
-- HUD-style physical information display
-- Instant feedback for parameter changes
+### 1. Damped Pendulum and Simple Pendulum
 
-🧠 Architecture Philosophy
+**Nonlinear pendulum with damping:**
 
-All simulations follow a unified structure:
-
-Physics model → Field / ODE function → Numerical method → Update loop → Visualization
-
-Two main categories:
-
-1. Dynamical Systems (RK4)
-- Pendulums
-- Oscillators
-- Chaotic systems
-- Circuits
-
-2. Field Systems (Simpson / Analytical discretization)
-- Electric fields
-- Magnetic fields
-- Charge distributions
-- Finite geometry sources
-
-📦 Implemented Systems
-
-🧷 1. Pendulums (Linear & Nonlinear)
-
-Nonlinear damped pendulum:
 θ'' + (b/m)θ' + (g/L) sin(θ) = 0  
 
 Run:
+```bash
 python scripts/pendulo_amortecido.py
 
-Simple pendulum:
+Simple pendulum (b = 0):
 
-θ'' + (g/L) sin(θ) = 0  
+θ'' + (g/L) sin(θ) = 0
 
 Run:
+
 python scripts/Pendulo_simples.py
 
+### 2. Double Pendulum (Chaotic System)
 
-🌀 2. Double Pendulum (Chaotic System)
+θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]
+/ [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
 
-Highly nonlinear coupled system exhibiting chaos.
-
-θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ] / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
-
-θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁) + θ₂'²L₂m₂cos(θ₁ - θ₂)) ] / [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
+θ₂'' = [ 2 sin(θ₁ - θ₂)(θ₁'²L₁(m₁ + m₂) + g(m₁ + m₂)cos(θ₁) + θ₂'²L₂m₂cos(θ₁ - θ₂)) ]
+/ [ L₂(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
 
 Run:
+
 python scripts/Pendulo_duplo.py
 
-
-
-🧵 3. Coupled Oscillators (Mass-Spring Chain)
+###3. Coupled Mass-Spring Chain
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 
 Run:
+
 python scripts/cadeia_massas.py
 
+###4. Wave Interference in Mass-Spring Chain
 
-🌊 4. Wave Interference in Chains
-
-Gaussian perturbation propagation + interference effects.
+Simulation of wave propagation and interference using Gaussian perturbations.
 
 Run:
+
 python scripts/cadeia_interferencia.py
 
+###5. Gravitational Two-Body Problem
 
-🌍 5. Two-Body Gravitational System
+r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
+r₂'' = G m₁ (r₁ − r₂) / |r₁ − r₂|³
 
-r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³  
-r₂'' = G m₁ (r₁ − r₂) / |r₁ − r₂|³  
-
-Conserves energy and angular momentum.
+This system conserves total energy and angular momentum.
 
 Run:
+
 python scripts/dois_corpos.py
 
+###6. RLC Circuit Simulation
 
-⚡ 6. RLC Circuit
+V(t) = V₀ cos(ωt)
 
-q' = i  
-i' = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q  
+q'(t) = i
+i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 
 Run:
+
 python scripts/circuito_rlc.py
 
+###7. Spring-Mass Oscillator (with Gravity)
 
-🔌 7. RC Circuit
-
-q' + (1/RC) q = 0  
+m y'' + k y = mg
 
 Run:
+
+python scripts/Massa-mola-gravidade.py
+
+###8. RC Circuit
+
+q' + (1/RC) q = 0
+
+Run:
+
 python scripts/circuito_rc.py
 
+###9. Kapitza's Pendulum
 
-🧲 8. Kapitza Pendulum
+y(t) = A cos(ωt)
 
-Fast oscillating pivot system with effective potential.
+Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 
 Run:
+
 python scripts/Kapitiza_pendulo.py
 
+###10. Driven Pendulum on Oscillating Cart
 
-🚗 9. Driven Pendulum (Oscillating Base)
+x(t) = A cos(ωt)
 
-x(t) = A cos(ωt)  
 θ'' = −(g/L) sin(θ) + (A/L) cos(θ) cos(ωt)
 
 Run:
+
 python scripts/Driven_cart_pendulum.py
 
+###11. Projectile Motion with Air Resistance
 
-🪂 10. Projectile with Air Resistance
+x'(t) = vₓ
+y'(t) = vᵧ
+
+vₓ'(t) = -(k/m) v vₓ
+vᵧ'(t) = -g -(k/m) v vᵧ
 
 v = √(vₓ² + vᵧ²)
 
-vₓ' = -(k/m) v vₓ  
-vᵧ' = -g - (k/m) v vᵧ  
-
 Run:
+
 python scripts/Launch.py
 
+###12. Electromagnetic Field Simulations
 
-⚡ 11. Electromagnetic Field Systems (NEW STRUCTURE)
+Electric and magnetic field systems are computed via discretization and numerical integration.
 
-This project also includes field-based simulations, built with a different architecture:
+Electric field (Coulomb law):
 
-🧲 Electric Field (charges, dipoles)
-- Coulomb law discretized on grids
-- Streamplot visualization
-- Charge superposition
+E(r) = (1/4πϵ₀) Σ [ qᵢ (r - rᵢ) / |r - rᵢ|³ ]
 
-🧲 Magnetic Field (wire, solenoid)
-- Biot-Savart numerical integration
-- Symmetry-based simplifications
-- Field line visualization
+Examples:
 
-🔁 Standard Pattern:
+python fields_scripts/Eletric_field/Point_charge.py
+python fields_scripts/Eletric_field/Conducting_sphere.py
 
-Field function → Grid evaluation → Normalization → Streamplot → HUD
+Magnetic field (Biot–Savart law):
 
+dB = (μ₀/4π) (I dℓ × r̂) / r²
 
+Examples:
+
+python fields_scripts/Magnetic_field/Infinite_wire.py
+python fields_scripts/Magnetic_field/Finite_wire.py
+python fields_scripts/Magnetic_field/Infinite_cilyndrical_wire.py
+python fields_scripts/Magnetic_field/Finite_solenoid.py
+⚡ Field Simulation Structure
+
+Field simulations are organized as:
+
+fields_scripts/
+├── Eletric_field/
+│   ├── Point_charge.py
+│   ├── Conducting_sphere.py
+│
+├── Magnetic_field/
+│   ├── Infinite_wire.py
+│   ├── Finite_wire.py
+│   ├── Infinite_cilyndrical_wire.py
+│   ├── Finite_solenoid.py
+Implementation pattern
+
+All field codes follow the same structure:
+
+Define the physical law (Coulomb or Biot–Savart)
+Create a spatial grid (meshgrid)
+Compute field components at each point
+Normalize vectors (optional, for visualization)
+Plot using streamplot
+Add interactive sliders for parameters
+
+General flow:
+
+Field function → Grid evaluation → Normalization → Visualization (streamplot) → Interactivity
 ▶️ How to Run
-
 git clone https://github.com/gustavosbarroso/simplephysics.git
 cd simplephysics
 pip install -r requirements.txt
+
+Run any simulation with:
+
 python scripts/<script_name>.py
 
+or for field systems:
 
+python fields_scripts/<category>/<script_name>.py
+🎛️ Interactive Controls
 
-🎛️ Interactive System Design
+All simulations include:
 
-Every simulation includes:
+Sliders for real-time parameter adjustment
+Dynamic updates of trajectories and states
+Visualization of system evolution
+Real-time recomputation of physical quantities
 
-- Real-time sliders
-- Instant recomputation of ODE/fields
-- Dynamic visualization updates
-- Physical parameter HUD
-- Clean separation: physics / numerics / plotting
+🧠 Approach
 
+Systems modeled as ODEs or continuous fields
+Conversion to first-order systems
+Numerical integration via RK4 and SciPy solvers
+Spatial discretization for field problems
+Dynamic visualization and analysis
 
-🧠 Methodology
+🔗 Physical Connections
 
-Dynamical systems:
-- Convert to first-order ODEs
-- Integrate via RK4 or SciPy solvers
-- Visualize trajectories + phase space
-
-Field systems:
-- Define continuous field equation
-- Discretize on spatial grid
-- Normalize vectors
-- Plot streamlines / magnitude maps
-
-
-🔗 Physical Domains Covered
-
-- Classical mechanics
-- Nonlinear dynamics
-- Chaos theory
-- Electrical circuits
-- Electromagnetism
-- Numerical physics methods
-
+Classical mechanics
+Electrical circuits
+Electromagnetism
+Nonlinear dynamics
+Chaos theory
+Wave phenomena
 
 🚧 Project Evolution
 
-Stage 1:
-Independent scripts with global variables
+Initial version: independent simulations using global variables
 
-Stage 2:
-RK4-based modular simulations
+Current stage: modular and parameter-based architecture
 
-Stage 3 (current):
-Hybrid framework:
-- ODE systems (RK4)
-- Field systems (Simpson + grid solvers)
-- Unified visualization style
+Includes: ODE systems + field simulations
 
-Stage 4 (planned):
-- Unified simulation engine
-- GUI (Flask / Plotly / web-based)
-- Plug-and-play physics modules
+Next step: unified simulation interface (Flask + Plotly)
 
+🛠️ Development
 
-🛠️ Tech Stack
+Python, using:
 
-- Python
-- NumPy
-- Matplotlib
-- SciPy
-- IPyWidgets
-
-
+NumPy
+Matplotlib
+SciPy
+IPyWidgets
 👨‍🔬 Author
 
-Gustavo Sobreira Barroso  
-
+Gustavo Sobreira Barroso
 Physics Engineering Student
-
 
 📄 License
 
