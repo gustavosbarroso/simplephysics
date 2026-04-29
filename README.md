@@ -4,7 +4,7 @@ This repository contains numerical simulations of physical systems using the 4th
 
 The project explores a wide range of topics in physics through computational approaches, emphasizing both numerical accuracy and physical interpretation, including dynamical systems and electromagnetic field simulations.
 
-FEATURES
+⚙️ FEATURES
 
 Numerical integration of ordinary differential equations (ODEs)
 RK4 implementation for general dynamical systems
@@ -16,9 +16,9 @@ Real-time animation using matplotlib
 Interactive parameter control via sliders
 Visualization of trajectories, phase space, and vector fields
 
-IMPLEMENTED SYSTEMS
+📦 IMPLEMENTED SYSTEMS
 
-DAMPED PENDULUM AND SIMPLE PENDULUM
+I.DAMPED PENDULUM AND SIMPLE PENDULUM
 
 Nonlinear pendulum with damping:
 
@@ -34,7 +34,7 @@ Simple pendulum (b = 0):
 Run:
 python scripts/Pendulo_simples.py
 
-DOUBLE PENDULUM (CHAOTIC SYSTEM)
+II.DOUBLE PENDULUM (CHAOTIC SYSTEM)
 
 θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]
 / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
@@ -45,7 +45,7 @@ DOUBLE PENDULUM (CHAOTIC SYSTEM)
 Run:
 python scripts/Pendulo_duplo.py
 
-COUPLED MASS-SPRING CHAIN
+III.COUPLED MASS-SPRING CHAIN
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 
@@ -59,7 +59,7 @@ Simulation of wave propagation and interference using Gaussian perturbations.
 Run:
 python scripts/cadeia_interferencia.py
 
-GRAVITATIONAL TWO-BODY PROBLEM
+IV.GRAVITATIONAL TWO-BODY PROBLEM
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 r₂'' = G m₁ (r₁ − r₂) / |r₂ − r₁|³
@@ -69,7 +69,7 @@ This system conserves total energy and angular momentum.
 Run:
 python scripts/dois_corpos.py
 
-RLC CIRCUIT SIMULATION
+V.RLC CIRCUIT SIMULATION
 
 V(t) = V₀ cos(ωt)
 
@@ -79,21 +79,21 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 python scripts/circuito_rlc.py
 
-SPRING-MASS OSCILLATOR (WITH GRAVITY)
+VI.SPRING-MASS OSCILLATOR (WITH GRAVITY)
 
 m y'' + k y = mg
 
 Run:
 python scripts/Massa-mola-gravidade.py
 
-RC CIRCUIT
+VII.RC CIRCUIT
 
 q' + (1/RC) q = 0
 
 Run:
 python scripts/circuito_rc.py
 
-KAPITZA'S PENDULUM
+IX.KAPITZA'S PENDULUM
 
 y(t) = A cos(ωt)
 
@@ -102,7 +102,7 @@ Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 Run:
 python scripts/Kapitiza_pendulo.py
 
-DRIVEN PENDULUM ON OSCILLATING CART
+X.DRIVEN PENDULUM ON OSCILLATING CART
 
 x(t) = A cos(ωt)
 
@@ -111,7 +111,7 @@ x(t) = A cos(ωt)
 Run:
 python scripts/Driven_cart_pendulum.py
 
-PROJECTILE MOTION WITH AIR RESISTANCE
+XI.PROJECTILE MOTION WITH AIR RESISTANCE
 
 x'(t) = vₓ
 y'(t) = vᵧ
@@ -124,7 +124,7 @@ v = √(vₓ² + vᵧ²)
 Run:
 python scripts/Launch.py
 
-ELECTROMAGNETIC FIELD SIMULATIONS
+XII.⚡ ELECTROMAGNETIC FIELD SIMULATIONS
 
 Electric field (Coulomb law):
 
@@ -134,7 +134,7 @@ Examples:
 python fields_scripts/Eletric_field/Point_charge.py
 python fields_scripts/Eletric_field/Conducting_sphere.py
 
-Magnetic Field (Biot–Savart law):
+XIII.Magnetic Field (Biot–Savart law):
 
 dB = (μ₀/4π) (I dℓ × r̂) / r²
 
@@ -144,7 +144,7 @@ python fields_scripts/Magnetic_field/Finite_wire.py
 python fields_scripts/Magnetic_field/Infinite_cilyndrical_wire.py
 python fields_scripts/Magnetic_field/Finite_solenoid.py
 
-FIELD SIMULATION STRUCTURE
+🧲 FIELD SIMULATION STRUCTURE
 
 fields_scripts/
 ├── Eletric_field/
@@ -154,7 +154,7 @@ Pattern:
 
 Field function → Grid → Normalization → Streamplot → Interactivity
 
-HOW TO RUN
+▶️ HOW TO RUN
 
 git clone https://github.com/gustavosbarroso/simplephysics.git
 
@@ -167,14 +167,14 @@ python scripts/<script_name>.py
 or:
 python fields_scripts/<category>/<script_name>.py
 
-INTERACTIVE CONTROLS
+🎛️ INTERACTIVE CONTROLS
 
 Sliders for real-time parameter adjustment
 Dynamic updates of trajectories and states
 Visualization of system evolution
 Real-time recomputation
 
-APPROACH
+🧠 APPROACH
 
 Systems modeled as ODEs or continuous fields
 Conversion to first-order systems
@@ -182,7 +182,7 @@ Numerical integration via RK4 and SciPy solvers
 Spatial discretization for field problems
 Dynamic visualization and analysis
 
-PHYSICAL CONNECTIONS
+🔗 PHYSICAL CONNECTIONS
 
 Classical mechanics
 Electrical circuits
@@ -191,14 +191,14 @@ Nonlinear dynamics
 Chaos theory
 Wave phenomena
 
-PROJECT EVOLUTION
+🚧 PROJECT EVOLUTION
 
 Initial version: independent simulations using global variables
 Current stage: modular and parameter-based architecture
 Includes: ODE systems and field simulations
 Next step: unified simulation interface (Flask + Plotly)
 
-DEVELOPMENT
+🛠️ DEVELOPMENT
 
 Python, using:
 
@@ -207,13 +207,11 @@ Matplotlib
 SciPy
 IPyWidgets
 
-AUTHOR
+👨‍🔬 AUTHOR
 
 Gustavo Sobreira Barroso
 Physics Engineering Student
 
-LICENSE
-
-MIT License
+📄 LICENSE
 
 MIT License
