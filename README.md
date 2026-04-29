@@ -40,7 +40,8 @@ Simple pendulum (b = 0):
 Run:
 
 python scripts/Pendulo_simples.py
-Double Pendulum (Chaotic System)
+
+### Double Pendulum (Chaotic System)
 
 θ₁'' = [ -g(2m₁ + m₂)sin(θ₁) - m₂g sin(θ₁ - 2θ₂) - 2 sin(θ₁ - θ₂)m₂(θ₂'²L₂ + θ₁'²L₁cos(θ₁ - θ₂)) ]
 / [ L₁(2m₁ + m₂ - m₂cos(2θ₁ - 2θ₂)) ]
@@ -51,7 +52,8 @@ Double Pendulum (Chaotic System)
 Run:
 
 python scripts/Pendulo_duplo.py
-Coupled Mass-Spring Chain
+
+###Coupled Mass-Spring Chain
 
 m xᵢ'' = k(xᵢ₊₁ + xᵢ₋₁ − 2xᵢ)
 
@@ -65,7 +67,8 @@ Simulation of wave propagation and interference using Gaussian perturbations.
 Run:
 
 python scripts/cadeia_interferencia.py
-Gravitational Two-Body Problem
+
+###Gravitational Two-Body Problem
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 r₂'' = G m₁ (r₁ − r₂) / |r₂ − r₁|³
@@ -75,7 +78,8 @@ This system conserves total energy and angular momentum.
 Run:
 
 python scripts/dois_corpos.py
-RLC Circuit Simulation
+
+###RLC Circuit Simulation
 
 V(t) = V₀ cos(ωt)
 
@@ -85,21 +89,24 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 
 python scripts/circuito_rlc.py
-Spring-Mass Oscillator (with Gravity)
+
+###Spring-Mass Oscillator (with Gravity)
 
 m y'' + k y = mg
 
 Run:
 
 python scripts/Massa-mola-gravidade.py
-RC Circuit
+
+###RC Circuit
 
 q' + (1/RC) q = 0
 
 Run:
 
 python scripts/circuito_rc.py
-Kapitza's Pendulum
+
+###Kapitza's Pendulum
 
 y(t) = A cos(ωt)
 
@@ -108,7 +115,8 @@ Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 Run:
 
 python scripts/Kapitiza_pendulo.py
-Driven Pendulum on Oscillating Cart
+
+###Driven Pendulum on Oscillating Cart
 
 x(t) = A cos(ωt)
 
@@ -117,7 +125,8 @@ x(t) = A cos(ωt)
 Run:
 
 python scripts/Driven_cart_pendulum.py
-Projectile Motion with Air Resistance
+
+###Projectile Motion with Air Resistance
 
 x'(t) = vₓ
 y'(t) = vᵧ
@@ -130,7 +139,8 @@ v = √(vₓ² + vᵧ²)
 Run:
 
 python scripts/Launch.py
-Electromagnetic Field Simulations
+
+###Electromagnetic Field Simulations
 
 Electric and magnetic field systems are computed via discretization and numerical integration.
 
@@ -143,7 +153,7 @@ Examples:
 python fields_scripts/Eletric_field/Point_charge.py
 python fields_scripts/Eletric_field/Conducting_sphere.py
 
-Magnetic field (Biot–Savart law):
+###Magnetic field (Biot–Savart law):
 
 dB = (μ₀/4π) (I dℓ × r̂) / r²
 
