@@ -1,4 +1,3 @@
-🔬 simplephysics
 # 🔬 simplephysics
 
 This repository contains numerical simulations of physical systems using the 4th-order Runge-Kutta (RK4) method, numerical integration techniques, and interactive visualization.
