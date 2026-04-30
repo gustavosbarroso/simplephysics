@@ -62,6 +62,7 @@ python scripts/cadeia_interferencia.py
 V.GRAVITATIONAL TWO-BODY PROBLEM
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
+
 r₂'' = G m₁ (r₁ − r₂) / |r₂ − r₁|³
 
 This system conserves total energy and angular momentum.
