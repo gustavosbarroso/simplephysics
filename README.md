@@ -187,10 +187,15 @@ Dynamic visualization and analysis
 🔗 PHYSICAL CONNECTIONS
 
 Classical mechanics
+
 Electrical circuits
+
 Electromagnetism
+
 Nonlinear dynamics
+
 Chaos theory
+
 Wave phenomena
 
 🚧 PROJECT EVOLUTION
@@ -208,13 +213,17 @@ Next step: unified simulation interface (Flask + Plotly)
 Python, using:
 
 NumPy
+
 Matplotlib
+
 SciPy
+
 IPyWidgets
 
 👨‍🔬 AUTHOR
 
 Gustavo Sobreira Barroso
+
 Physics Engineering Student
 
 📄 LICENSE
