@@ -7,13 +7,21 @@ The project explores a wide range of topics in physics through computational app
 ⚙️ FEATURES
 
 Numerical integration of ordinary differential equations (ODEs)
+
 RK4 implementation for general dynamical systems
+
 Use of modern solvers (SciPy solve_ivp)
+
 Simpson integration for continuous field distributions
+
 Simulation of nonlinear and coupled systems
+
 Discrete evaluation of electromagnetic fields on grids
+
 Real-time animation using matplotlib
+
 Interactive parameter control via sliders
+
 Visualization of trajectories, phase space, and vector fields
 
 📦 IMPLEMENTED SYSTEMS
