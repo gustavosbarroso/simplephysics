@@ -67,7 +67,7 @@ Simulation of wave propagation and interference using Gaussian perturbations.
 Run:
 python scripts/cadeia_interferencia.py
 
-V.GRAVITATIONAL TWO-BODY PROBLEM
+IV.GRAVITATIONAL TWO-BODY PROBLEM
 
 r₁'' = G m₂ (r₂ − r₁) / |r₂ − r₁|³
 
@@ -89,21 +89,21 @@ i'(t) = (V₀/L) cos(ωt) − (R/L)i − (1/(LC))q
 Run:
 python scripts/circuito_rlc.py
 
-VII.SPRING-MASS OSCILLATOR (WITH GRAVITY)
+V.SPRING-MASS OSCILLATOR (WITH GRAVITY)
 
 m y'' + k y = mg
 
 Run:
 python scripts/Massa-mola-gravidade.py
 
-VIII.RC CIRCUIT
+VII.RC CIRCUIT
 
 q' + (1/RC) q = 0
 
 Run:
 python scripts/circuito_rc.py
 
-IX.KAPITZA'S PENDULUM
+VIII.KAPITZA'S PENDULUM
 
 y(t) = A cos(ωt)
 
@@ -112,7 +112,7 @@ Lθ'' = -g sin(θ) + Aω² cos(ωt) sin(θ)
 Run:
 python scripts/Kapitiza_pendulo.py
 
-X.DRIVEN PENDULUM ON OSCILLATING CART
+IX.DRIVEN PENDULUM ON OSCILLATING CART
 
 x(t) = A cos(ωt)
 
@@ -121,7 +121,7 @@ x(t) = A cos(ωt)
 Run:
 python scripts/Driven_cart_pendulum.py
 
-XI.PROJECTILE MOTION WITH AIR RESISTANCE
+X.PROJECTILE MOTION WITH AIR RESISTANCE
 
 x'(t) = vₓ
 y'(t) = vᵧ
@@ -134,7 +134,7 @@ v = √(vₓ² + vᵧ²)
 Run:
 python scripts/Launch.py
 
-XII.⚡ ELECTROMAGNETIC FIELD SIMULATIONS
+XI.⚡ ELECTROMAGNETIC FIELD SIMULATIONS
 
 Electric field (Coulomb law):
 
@@ -144,7 +144,7 @@ Examples:
 python fields_scripts/Eletric_field/Point_charge.py
 python fields_scripts/Eletric_field/Conducting_sphere.py
 
-XIII.Magnetic Field (Biot–Savart law):
+XII.Magnetic Field (Biot–Savart law):
 
 dB = (μ₀/4π) (I dℓ × r̂) / r²
 
