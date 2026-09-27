@@ -104,7 +104,7 @@ ax1.grid()
 ax_plus = fig.add_subplot(gs[0, 1])
 
 ax_plus.text(
-    0.3,
+    0.2,
     0.5,
     "+",
     fontsize=35,
@@ -138,7 +138,7 @@ ax2.grid()
 ax_equal = fig.add_subplot(gs[0, 3])
 
 ax_equal.text(
-    0.3,
+    0.2,
     0.5,
     "=",
     fontsize=35,
