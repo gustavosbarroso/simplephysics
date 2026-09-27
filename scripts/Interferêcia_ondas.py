@@ -10,11 +10,7 @@ from matplotlib.widgets import Slider
 # Gerador de ondas
 # ---------------------------
 def onda(A, comprimento_onda, f, x, t, phi):
-    return A * np.sin(
-        ((2 * np.pi) / comprimento_onda) * x
-        - (2 * np.pi * f) * t
-        + phi
-    )
+    return A * np.sin(((2 * np.pi) / comprimento_onda) * x- (2 * np.pi * f) * t+ phi)
 
 
 # ---------------------------
@@ -47,23 +43,9 @@ phi2_0 = np.pi / 2
 # ---------------------------
 # Ondas iniciais
 # ---------------------------
-y1 = onda(
-    A1_0,
-    lambda1_0,
-    f1_0,
-    x,
-    t,
-    phi1_0
-)
+y1 = onda(A1_0,lambda1_0,f1_0, x,t,phi1_0)
 
-y2 = onda(
-    A2_0,
-    lambda2_0,
-    f2_0,
-    x,
-    t,
-    phi2_0
-)
+y2 = onda(A2_0,lambda2_0,f2_0, x, t,phi2_0)
 
 y_resultante = y1 + y2
 
@@ -73,12 +55,7 @@ y_resultante = y1 + y2
 # ---------------------------
 fig = plt.figure(figsize=(15, 8))
 
-gs = fig.add_gridspec(
-    2,
-    5,
-    height_ratios=[5, 2],
-    width_ratios=[4, 1, 4, 1, 4]
-)
+gs = fig.add_gridspec(2,5,height_ratios=[5, 2],width_ratios=[4, 1, 4, 1, 4])
 
 
 # ---------------------------
