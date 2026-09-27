@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+from matplotlib.animation import FuncAnimation
 
 
 # ---------------------------
@@ -43,9 +44,9 @@ phi2_0 = np.pi / 2
 # ---------------------------
 # Ondas iniciais
 # ---------------------------
-y1 = onda(A1_0,lambda1_0,f1_0, x,t,phi1_0)
+y1 = onda(A1_0,lambda1_0, f1_0, x, t, phi1_0)
 
-y2 = onda(A2_0,lambda2_0,f2_0, x, t,phi2_0)
+y2 = onda(A2_0,lambda2_0, f2_0, x, t, phi2_0)
 
 y_resultante = y1 + y2
 
@@ -55,7 +56,12 @@ y_resultante = y1 + y2
 # ---------------------------
 fig = plt.figure(figsize=(15, 8))
 
-gs = fig.add_gridspec(2,5,height_ratios=[5, 2],width_ratios=[4, 1, 4, 1, 4])
+gs = fig.add_gridspec(
+    2,
+    5,
+    height_ratios=[5, 2],
+    width_ratios=[4, 1, 4, 1, 4]
+)
 
 
 # ---------------------------
@@ -100,7 +106,7 @@ ax2 = fig.add_subplot(gs[0, 2])
 line2, = ax2.plot(x, y2)
 
 ax2.set_title(r"$y_2(x,t)$")
-ax2.set_xlabel("x")
+ax2.set_xlabel("x(m)")
 ax2.set_ylabel(r"$y_2(m)$")
 
 ax2.set_xlim(x_min, x_max)
@@ -134,7 +140,7 @@ ax3 = fig.add_subplot(gs[0, 4])
 line3, = ax3.plot(x, y_resultante)
 
 ax3.set_title(r"$y_1(x,t) + y_2(x,t)$")
-ax3.set_xlabel("x")
+ax3.set_xlabel("x(m)")
 ax3.set_ylabel(r"$y_1(m) + y_2(m)$")
 
 ax3.set_xlim(x_min, x_max)
@@ -155,7 +161,7 @@ ax3.grid()
 # Título Onda 1
 # ---------------------------
 fig.text(
-    0.23,
+    0.10,
     0.31,
     "Onda 1",
     ha="center",
@@ -228,7 +234,7 @@ slider_phi1 = Slider(
 # Título Onda 2
 # ---------------------------
 fig.text(
-    0.73,
+    0.60,
     0.31,
     "Onda 2",
     ha="center",
@@ -356,6 +362,75 @@ slider_A2.on_changed(update)
 slider_lambda2.on_changed(update)
 slider_f2.on_changed(update)
 slider_phi2.on_changed(update)
+
+
+# ============================================================
+# ANIMAÇÃO
+# ============================================================
+
+def animar(frame):
+
+    global t
+
+    # Avanço do tempo
+    t = frame * 0.02
+
+    # Parâmetros atuais dos sliders
+    A1 = slider_A1.val
+    A2 = slider_A2.val
+
+    lambda1 = slider_lambda1.val
+    lambda2 = slider_lambda2.val
+
+    f1 = slider_f1.val
+    f2 = slider_f2.val
+
+    phi1 = slider_phi1.val
+    phi2 = slider_phi2.val
+
+    # ---------------------------
+    # Calcula ondas
+    # ---------------------------
+    y1 = onda(
+        A1,
+        lambda1,
+        f1,
+        x,
+        t,
+        phi1
+    )
+
+    y2 = onda(
+        A2,
+        lambda2,
+        f2,
+        x,
+        t,
+        phi2
+    )
+
+    y_resultante = y1 + y2
+
+    # ---------------------------
+    # Atualiza gráficos
+    # ---------------------------
+    line1.set_ydata(y1)
+    line2.set_ydata(y2)
+    line3.set_ydata(y_resultante)
+
+    return line1, line2, line3
+
+
+# ---------------------------
+# Cria animação
+# ---------------------------
+anim = FuncAnimation(
+    fig,
+    animar,
+    frames=1000,
+    interval=20,
+    blit=False
+)
 
 
 # ---------------------------
