@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('TkAgg')
 
 import matplotlib.pyplot as plt
@@ -12,8 +13,10 @@ from matplotlib.widgets import Slider
 params = {
     "R": 2.0,
     "C": 1.0,
-    "q0": 1.0
+    "V0": 5.0,
+    "q0": 0.0
 }
+
 
 # ---------------------------
 # SISTEMA RC
@@ -22,9 +25,11 @@ def f(r, t, params):
     q = r[0]
     R = params["R"]
     C = params["C"]
+    V0 = params["V0"]
 
-    dqdt = -(1/(R*C)) * q
+    dqdt = (V0 - q / C) / R
     return np.array([dqdt], float)
+
 
 # ---------------------------
 # RK4
@@ -40,23 +45,27 @@ def RK4(f, a, b, N, r, params):
         t = tp[k]
 
         k1 = h * f(r, t, params)
-        k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
-        k3 = h * f(r + 0.5*k2, t + 0.5*h, params)
+        k2 = h * f(r + 0.5 * k1, t + 0.5 * h, params)
+        k3 = h * f(r + 0.5 * k2, t + 0.5 * h, params)
         k4 = h * f(r + k3, t + h, params)
 
-        r = r + (k1 + 2*k2 + 2*k3 + k4)/6
+        r = r + (k1 + 2 * k2 + 2 * k3 + k4) / 6
         q_list.append(r[0])
 
     q_list = np.array(q_list)
 
     R = params["R"]
     C = params["C"]
-    i_list = -(1/(R*C)) * q_list
+    V0 = params["V0"]
+
+    i_list = (V0 - q_list / C) / R
 
     return tp, q_list, i_list
 
+
 def solve(params):
     return RK4(f, 0, 10, 500, [params["q0"]], params)
+
 
 # ---------------------------
 # INICIAIS
@@ -66,7 +75,7 @@ tp, q, i_vals = solve(params)
 # ---------------------------
 # FIGURA
 # ---------------------------
-fig, (ax_circ, ax_plot) = plt.subplots(1, 2, figsize=(11,5))
+fig, (ax_circ, ax_plot) = plt.subplots(1, 2, figsize=(11, 5))
 plt.subplots_adjust(bottom=0.35)
 
 # ---------------------------
@@ -87,15 +96,42 @@ ax_circ.plot([x0, x0], [y1, y0], lw=2)
 
 # resistor
 xr = np.linspace(4, 6, 9)
-yr = y0 + 0.3*np.array([(-1)**k for k in range(len(xr))])
+yr = y0 + 0.3 * np.array([(-1) ** k for k in range(len(xr))])
 ax_circ.plot(xr, yr, lw=2.5)
-ax_circ.text(5, y0-0.8, "R", ha='center')
+ax_circ.text(5, y0 - 0.8, "R", ha='center')
+
+# fonte de tensão
+ax_circ.plot([x0-0.2, x0+0.2], [2.7, 2.7], lw=2.5)
+ax_circ.plot([x0-0.4, x0+0.4], [3.0, 3.0], lw=2.5)
+ax_circ.text(x0+0.7, 3.0, "V₀", va='center')
 
 # capacitor
-ax_circ.plot([x1, x1], [2.3, 3.7], lw=4, color='white')
-ax_circ.plot([x1-0.3, x1+0.3], [2.3, 2.3], lw=2.5)
-ax_circ.plot([x1-0.3, x1+0.3], [3.7, 3.7], lw=2.5)
-ax_circ.text(x1+0.6, 3.0, "C", va='center')
+placa_inf = 2.75
+placa_sup = 3.25
+
+ax_circ.fill_between(
+    [x1 - 0.35, x1 + 0.35],
+    placa_inf,
+    placa_sup,
+    color='white',
+    zorder=3
+)
+
+ax_circ.plot(
+    [x1 - 0.3, x1 + 0.3],
+    [placa_inf, placa_inf],
+    lw=2.5,
+    zorder=4
+)
+
+ax_circ.plot(
+    [x1 - 0.3, x1 + 0.3],
+    [placa_sup, placa_sup],
+    lw=2.5,
+    zorder=4
+)
+
+ax_circ.text(x1 + 0.6, 3.0, "C", va='center')
 
 # ---------------------------
 # ELÉTRONS
@@ -104,17 +140,20 @@ num_e = 40
 electron_pos = np.linspace(0, 1, num_e)
 electrons, = ax_circ.plot([], [], 'ro', ms=3)
 
+
 def loop_path(s):
     if s < 0.25:
-        return x0 + (x1-x0)*(s/0.25), y0
+        return x0 + (x1 - x0) * (s / 0.25), y0
     elif s < 0.5:
-        return x1, y0 + (y1-y0)*((s-0.25)/0.25)
+        return x1, y0 + (y1 - y0) * ((s - 0.25) / 0.25)
     elif s < 0.75:
-        return x1 - (x1-x0)*((s-0.5)/0.25), y1
+        return x1 - (x1 - x0) * ((s - 0.5) / 0.25), y1
     else:
-        return x0, y1 - (y1-y0)*((s-0.75)/0.25)
+        return x0, y1 - (y1 - y0) * ((s - 0.75) / 0.25)
 
-# ---------------------------
+    # ---------------------------
+
+
 # GRÁFICO
 # ---------------------------
 ax_plot.set_xlim(0, tp[-1])
@@ -140,6 +179,7 @@ text_info = fig.text(
     bbox=dict(boxstyle="round", facecolor="white", alpha=0.8)
 )
 
+
 # ---------------------------
 # ANIMAÇÃO
 # ---------------------------
@@ -164,13 +204,15 @@ def update(frame):
 
     text_info.set_text(
         f"R = {params['R']:.2f} Ω\n"
-        f"C = {params['C']:.2f} F\n\n"
+        f"C = {params['C']:.2f} F\n"
+        f"V₀ = {params['V0']:.2f} V\n\n"
         f"q = {q[frame]:.3f} C\n"
         f"i = {i_vals[frame]:.3f} A\n"
         f"t = {tp[frame]:.2f} s"
     )
 
     return electrons, line_q, line_i
+
 
 ani = FuncAnimation(fig, update, frames=len(q), interval=20, blit=False)
 
@@ -179,11 +221,14 @@ ani = FuncAnimation(fig, update, frames=len(q), interval=20, blit=False)
 # ---------------------------
 ax_R = plt.axes([0.2, 0.2, 0.6, 0.03])
 ax_C = plt.axes([0.2, 0.15, 0.6, 0.03])
-ax_q0 = plt.axes([0.2, 0.10, 0.6, 0.03])
+ax_V0 = plt.axes([0.2, 0.10, 0.6, 0.03])
+ax_q0 = plt.axes([0.2, 0.05, 0.6, 0.03])
 
 slider_R = Slider(ax_R, 'R (Ω)', 0.1, 10, valinit=params["R"])
 slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=params["C"])
+slider_V0 = Slider(ax_V0, 'V₀ (V)', -10, 10, valinit=params["V0"])
 slider_q0 = Slider(ax_q0, 'q0 (C)', -2, 2, valinit=params["q0"])
+
 
 # ---------------------------
 # UPDATE SLIDERS
@@ -193,14 +238,13 @@ def update_sliders(val):
 
     params["R"] = slider_R.val
     params["C"] = slider_C.val
+    params["V0"] = slider_V0.val
     params["q0"] = slider_q0.val
 
     tp, q, i_vals = solve(params)
 
-    # reset elétrons
     electron_pos = np.linspace(0, 1, num_e)
 
-    # ajuste de escala
     ax_plot.set_xlim(0, tp[-1])
 
     ymin = min(np.min(q), np.min(i_vals))
@@ -215,8 +259,10 @@ def update_sliders(val):
 
     fig.canvas.draw_idle()
 
+
 slider_R.on_changed(update_sliders)
 slider_C.on_changed(update_sliders)
+slider_V0.on_changed(update_sliders)
 slider_q0.on_changed(update_sliders)
 
 plt.show()
