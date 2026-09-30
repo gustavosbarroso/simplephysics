@@ -86,7 +86,7 @@ def RK4(f, a, b, N, r, params):
 # ---------------------------
 def solve(params):
     return RK4(
-        f, 0, 20, 1000,
+        f, 0, 20, 500,
         [params["q0"], params["i0"]],
         params
     )
@@ -128,9 +128,29 @@ ax_circ.plot(x_res, y_res, lw=2.5)
 
 # capacitor
 yc0, yc1 = 2.2, 3.8
-ax_circ.plot([x1, x1], [yc0, yc1], lw=4, color='white')
-ax_circ.plot([x1-0.3, x1+0.3], [yc0, yc0], lw=2.5)
-ax_circ.plot([x1-0.3, x1+0.3], [yc1, yc1], lw=2.5)
+
+# branco cobrindo o espaço entre as placas
+ax_circ.fill_between(
+    [x1-0.35, x1+0.35],
+    yc0,
+    yc1,
+    color='white',
+    zorder=3
+)
+
+ax_circ.plot(
+    [x1-0.3, x1+0.3],
+    [yc0, yc0],
+    lw=2.5,
+    zorder=4
+)
+
+ax_circ.plot(
+    [x1-0.3, x1+0.3],
+    [yc1, yc1],
+    lw=2.5,
+    zorder=4
+)
 
 # indutor
 xl0, xl1 = 4, 6
@@ -273,8 +293,8 @@ slider_L = Slider(ax_L, 'L (H)', 0.1, 5, valinit=params["L"])
 slider_C = Slider(ax_C, 'C (F)', 0.1, 5, valinit=params["C"])
 slider_V0 = Slider(ax_V0, 'V0 (V)', 0, 10, valinit=params["V0"])
 slider_w = Slider(ax_w, 'ω (rad/s)', 0.1, 10, valinit=params["omega"])
-slider_q0 = Slider(ax_q0, 'q0 (C)', -5, 5, valinit=params["q0"])
-slider_i0 = Slider(ax_i0, 'i0 (A)', -5, 5, valinit=params["i0"])
+slider_q0 = Slider(ax_q0, 'q0 (C)', -20, 20, valinit=params["q0"])
+slider_i0 = Slider(ax_i0, 'i0 (A)', -20, 20, valinit=params["i0"])
 
 def update_sliders(val):
     global tp, q, i_vals, electron_pos
