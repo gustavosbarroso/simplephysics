@@ -102,7 +102,7 @@ ax_sys.set_title("Pêndulo de Kapitza")
 
 pivot_dot, = ax_sys.plot([], [], 'ro')
 rod, = ax_sys.plot([], [], lw=2)
-mass = Circle((0,0), 0.06)
+mass = Circle((0,0), 0.1)
 ax_sys.add_patch(mass)
 
 # ---------------------------
