@@ -64,7 +64,7 @@ def RK4(f, a, b_int, N, r, params):
 # ---------------------------
 def solve(params):
     tp, th, om = RK4(
-        f, 0, 10, 500,
+        f, 0, 10, 300,
         [params["theta0"], params["omega0"]],
         params
     )
@@ -74,29 +74,6 @@ def solve(params):
     y = -L * np.cos(th)
 
     return tp, th, om, x, y
-
-# ---------------------------
-# CLASSIFICAÇÃO
-# ---------------------------
-def classify_regime(params):
-    g = params["g"]
-    L = params["L"]
-    m = params["m"]
-    b = params["b"]
-
-    omega0 = np.sqrt(g / L)
-    gamma = (b/m) / 2
-
-    delta = gamma**2 - omega0**2
-
-    if abs(b/m) < 1e-6:
-        return "Sem amortecimento"
-    elif abs(delta) < 1e-3:
-        return "Criticamente amortecido"
-    elif delta > 0:
-        return "Superamortecido"
-    else:
-        return "Subamortecido"
 
 # ---------------------------
 # INICIAL
@@ -172,14 +149,11 @@ def update(frame):
         ax_plot.set_ylim(np.min(th[:i])*1.2, np.max(th[:i])*1.2)
         ax_plot2.set_ylim(np.min(om[:i])*1.2, np.max(om[:i])*1.2)
 
-    regime = classify_regime(params)
-
     texto = (
         f"L = {params['L']:.2f} m\n"
         f"g = {params['g']:.2f} m/s²\n"
         f"m = {params['m']:.2f} kg\n"
         f"b = {params['b']:.2f} kg/s\n\n"
-        f"Regime linear: {regime}\n\n"
         f"θ = {th[i]:.2f} rad\n"
         f"ω = {om[i]:.2f} rad/s\n"
         f"t = {tp[i]:.2f} s"
@@ -189,7 +163,13 @@ def update(frame):
 
     return line, line_th, line_om, text_info
 
-ani = FuncAnimation(fig, update, frames=len(tp), init_func=init, interval=20)
+ani = FuncAnimation(
+    fig,
+    update,
+    frames=len(tp),
+    init_func=init,
+    interval=20
+)
 
 # ---------------------------
 # SLIDERS
@@ -205,8 +185,20 @@ slider_g = Slider(ax_g, 'g [m/s²]', 1, 20, valinit=params["g"])
 slider_L = Slider(ax_L, 'L [m]', 0.1, 5, valinit=params["L"])
 slider_m = Slider(ax_m, 'm [kg]', 0.1, 10, valinit=params["m"])
 slider_b = Slider(ax_b, 'b [kg/s]', 0, 50, valinit=params["b"])
-slider_theta0 = Slider(ax_theta0, 'θ₀ [rad]', -np.pi, np.pi, valinit=params["theta0"])
-slider_omega0 = Slider(ax_omega0, 'ω₀ [rad/s]', -10, 10, valinit=params["omega0"])
+slider_theta0 = Slider(
+    ax_theta0,
+    'θ₀ [rad]',
+    -np.pi,
+    np.pi,
+    valinit=params["theta0"]
+)
+slider_omega0 = Slider(
+    ax_omega0,
+    'ω₀ [rad/s]',
+    -10,
+    10,
+    valinit=params["omega0"]
+)
 
 # ---------------------------
 # UPDATE SLIDERS
