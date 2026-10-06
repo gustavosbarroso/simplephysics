@@ -1,6 +1,9 @@
 # ---------------------------
 # Imports
 # ---------------------------
+import matplotlib
+matplotlib.use('TkAgg')
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
@@ -8,33 +11,61 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Rectangle, Circle
 
 
-# ---------------------------
-# Tensão induzida (ddp)
-# ---------------------------
-def ddp(N, A, w, t):
+# ============================================================
+# TENSÃO INDUZIDA (DDP)
+# ============================================================
+
+def ddp(N, A, B, w, t):
     return N * A * B * np.sin(w * t)
 
 
-# ---------------------------
-# Parâmetros iniciais
-# ---------------------------
+# ============================================================
+# CORRENTE INDUZIDA
+# ============================================================
+
+def I(ddp, R):
+
+    if R == 0:
+        return np.zeros_like(ddp)
+
+    return ddp / R
+
+
+# ============================================================
+# PARÂMETROS INICIAIS
+# ============================================================
+
 t = np.linspace(0, 10, 1000)
 
 A = 2.0
 B = 0.5
 w = 10
 N = 100
+R = 10
 
 
-# ---------------------------
-# Simulação inicial
-# ---------------------------
-ddp_resultante = ddp(N, A, w, t)
+# ============================================================
+# SIMULAÇÃO INICIAL
+# ============================================================
+
+ddp_resultante = ddp(
+    N,
+    A,
+    B,
+    w,
+    t
+)
+
+I_induzida = I(
+    ddp_resultante,
+    R
+)
 
 
-# ---------------------------
-# Figura
-# ---------------------------
+# ============================================================
+# FIGURA
+# ============================================================
+
 fig = plt.figure(figsize=(15, 8))
 
 gs = fig.add_gridspec(
@@ -215,52 +246,96 @@ ax.text(
 
 
 # ============================================================
-# GRÁFICO V(t) x t
+# GRÁFICO V(t) E I(t)
 # ============================================================
 
 ax2 = fig.add_subplot(gs[0, 2:5])
-pos = ax2.get_position()
+
 pos = ax2.get_position()
 
 ax2.set_position([
-    pos.x0 + 0.04,   # <-- desloca para a direita
+    pos.x0 + 0.04,
     pos.y0,
     pos.width,
     pos.height
 ])
 
-
-
 ax2.set_xlim(0, 2)
 
-ax2.set_ylim(
-    np.min(ddp_resultante) * 1.1,
-    np.max(ddp_resultante) * 1.1
+ax2.set_title(
+    "Gerador AC - Tensão e Corrente x Tempo"
 )
 
-ax2.set_title("Gerador AC - Voltagem x Tempo")
-
 ax2.set_xlabel("Tempo (s)")
-ax2.set_ylabel("V(t)")
+ax2.set_ylabel("V(t), I(t)")
 
 ax2.grid()
 
 
-# ---------------------------
-# Curva
-# ---------------------------
+# ============================================================
+# ESCALA INICIAL
+# ============================================================
 
-curva, = ax2.plot(
-    t[t <= 2],
-    ddp_resultante[t <= 2]
+mascara = t <= 2
+
+Vmax = np.max(
+    np.abs(ddp_resultante[mascara])
+)
+
+Imax = np.max(
+    np.abs(I_induzida[mascara])
+)
+
+ymax = max(
+    Vmax,
+    Imax
+)
+
+if ymax == 0:
+    ymax = 1
+
+ax2.set_ylim(
+    -1.1 * ymax,
+    1.1 * ymax
 )
 
 
-# ---------------------------
-# Ponto instantâneo
-# ---------------------------
+# ============================================================
+# CURVA V(t)
+# ============================================================
 
-ponto, = ax2.plot(
+curva_V, = ax2.plot(
+    t[mascara],
+    ddp_resultante[mascara],
+    linewidth=2,
+    label="V(t)"
+)
+
+
+# ============================================================
+# CURVA I(t)
+# ============================================================
+
+curva_I, = ax2.plot(
+    t[mascara],
+    I_induzida[mascara],
+    linewidth=2,
+    label="I(t)"
+)
+
+
+# ============================================================
+# LEGENDA
+# ============================================================
+
+ax2.legend()
+
+
+# ============================================================
+# PONTO INSTANTÂNEO DA TENSÃO
+# ============================================================
+
+ponto_V, = ax2.plot(
     [],
     [],
     "o",
@@ -268,9 +343,21 @@ ponto, = ax2.plot(
 )
 
 
-# ---------------------------
-# Linha do tempo
-# ---------------------------
+# ============================================================
+# PONTO INSTANTÂNEO DA CORRENTE
+# ============================================================
+
+ponto_I, = ax2.plot(
+    [],
+    [],
+    "o",
+    markersize=8
+)
+
+
+# ============================================================
+# LINHA DO TEMPO
+# ============================================================
 
 linha_tempo = ax2.axvline(
     0,
@@ -280,11 +367,11 @@ linha_tempo = ax2.axvline(
 
 
 # ============================================================
-# SLIDERS
+# TÍTULO DOS PARÂMETROS
 # ============================================================
 
 fig.text(
-    0.50,
+    0.30,
     0.31,
     "Parâmetros do gerador",
     ha="center",
@@ -293,9 +380,9 @@ fig.text(
 )
 
 
-# ---------------------------
-# Slider N
-# ---------------------------
+# ============================================================
+# SLIDER N
+# ============================================================
 
 ax_N = plt.axes(
     [0.10, 0.25, 0.40, 0.03]
@@ -311,9 +398,9 @@ slider_N = Slider(
 )
 
 
-# ---------------------------
-# Slider A
-# ---------------------------
+# ============================================================
+# SLIDER A
+# ============================================================
 
 ax_A = plt.axes(
     [0.10, 0.20, 0.40, 0.03]
@@ -328,9 +415,9 @@ slider_A = Slider(
 )
 
 
-# ---------------------------
-# Slider B
-# ---------------------------
+# ============================================================
+# SLIDER B
+# ============================================================
 
 ax_B = plt.axes(
     [0.10, 0.15, 0.40, 0.03]
@@ -345,9 +432,9 @@ slider_B = Slider(
 )
 
 
-# ---------------------------
-# Slider w
-# ---------------------------
+# ============================================================
+# SLIDER ω
+# ============================================================
 
 ax_w = plt.axes(
     [0.10, 0.10, 0.40, 0.03]
@@ -355,7 +442,7 @@ ax_w = plt.axes(
 
 slider_w = Slider(
     ax_w,
-    "ω(rad/s)",
+    "ω (rad/s)",
     0,
     20,
     valinit=w
@@ -363,20 +450,46 @@ slider_w = Slider(
 
 
 # ============================================================
+# SLIDER R
+# ============================================================
+
+ax_R = plt.axes(
+    [0.10, 0.05, 0.40, 0.03]
+)
+
+slider_R = Slider(
+    ax_R,
+    "R (Ω)",
+    1,
+    100,
+    valinit=R
+)
+
+
+# ============================================================
 # ATUALIZAÇÃO DOS SLIDERS
 # ============================================================
 
-def update(val):
+def update_sliders(val):
 
     global N
     global A
     global B
     global w
+    global R
+
+    global ddp_resultante
+    global I_induzida
+
+    # ---------------------------
+    # Novos parâmetros
+    # ---------------------------
 
     N = slider_N.val
     A = slider_A.val
     B = slider_B.val
     w = slider_w.val
+    R = slider_R.val
 
     # ---------------------------
     # Recalcula tensão
@@ -385,35 +498,64 @@ def update(val):
     ddp_resultante = ddp(
         N,
         A,
+        B,
         w,
         t
     )
 
     # ---------------------------
-    # Atualiza curva
+    # Recalcula corrente
     # ---------------------------
 
-    curva.set_ydata(
-        ddp_resultante[t <= 2]
+    I_induzida = I(
+        ddp_resultante,
+        R
     )
 
-    # ---------------------------
-    # Atualiza escala vertical
-    # ---------------------------
+    # ========================================================
+    # ATUALIZA V(t)
+    # ========================================================
 
-    Vmax = abs(N * A * B * w)
+    curva_V.set_ydata(
+        ddp_resultante[mascara]
+    )
 
-    if Vmax == 0:
-        Vmax = 1
+    # ========================================================
+    # ATUALIZA I(t)
+    # ========================================================
+
+    curva_I.set_ydata(
+        I_induzida[mascara]
+    )
+
+    # ========================================================
+    # ESCALA DINÂMICA
+    # ========================================================
+
+    Vmax = np.max(
+        np.abs(ddp_resultante[mascara])
+    )
+
+    Imax = np.max(
+        np.abs(I_induzida[mascara])
+    )
+
+    ymax = max(
+        Vmax,
+        Imax
+    )
+
+    if ymax == 0:
+        ymax = 1
 
     ax2.set_ylim(
-        -1.1 * Vmax,
-        1.1 * Vmax
+        -1.1 * ymax,
+        1.1 * ymax
     )
 
-    # ---------------------------
-    # Atualiza sentido do campo
-    # ---------------------------
+    # ========================================================
+    # ATUALIZA SENTIDO DO CAMPO
+    # ========================================================
 
     for seta in setas_campo:
         seta.remove()
@@ -421,11 +563,8 @@ def update(val):
     setas_campo.clear()
 
     if B >= 0:
-
         sentido = 1
-
     else:
-
         sentido = -1
 
     for y in np.linspace(-1.5, 1.5, 5):
@@ -446,14 +585,15 @@ def update(val):
     fig.canvas.draw_idle()
 
 
-# ---------------------------
-# Conecta sliders
-# ---------------------------
+# ============================================================
+# CONECTA SLIDERS
+# ============================================================
 
-slider_N.on_changed(update)
-slider_A.on_changed(update)
-slider_B.on_changed(update)
-slider_w.on_changed(update)
+slider_N.on_changed(update_sliders)
+slider_A.on_changed(update_sliders)
+slider_B.on_changed(update_sliders)
+slider_w.on_changed(update_sliders)
+slider_R.on_changed(update_sliders)
 
 
 # ============================================================
@@ -462,24 +602,24 @@ slider_w.on_changed(update)
 
 def animar(frame):
 
-    # ---------------------------
-    # Tempo
-    # ---------------------------
+    # ========================================================
+    # TEMPO
+    # ========================================================
 
     tempo = frame * 0.02
 
-    # ---------------------------
-    # Ângulo da bobina
-    # ---------------------------
+    # ========================================================
+    # ÂNGULO DA BOBINA
+    # ========================================================
 
     angulo = w * tempo
-
 
     # ========================================================
     # BOBINA RETANGULAR
     # ========================================================
 
     largura = 1.5 * np.cos(angulo)
+
     altura = 1.2
 
     x = np.array([
@@ -503,7 +643,6 @@ def animar(frame):
         y
     )
 
-
     # ========================================================
     # EIXO / FIO ÚNICO
     # ========================================================
@@ -519,7 +658,6 @@ def animar(frame):
         ]
     )
 
-
     # ========================================================
     # TENSÃO INSTANTÂNEA
     # ========================================================
@@ -527,21 +665,32 @@ def animar(frame):
     V = ddp(
         N,
         A,
+        B,
         w,
         tempo
     )
 
+    # ========================================================
+    # CORRENTE INSTANTÂNEA
+    # ========================================================
+
+    corrente = I(
+        V,
+        R
+    )
 
     # ========================================================
     # BRILHO DA LÂMPADA
     # ========================================================
 
-    Vmax = abs(N * A * B * w)
+    Vmax_lampada = abs(
+        N * A * B * w
+    )
 
-    if Vmax > 0:
+    if Vmax_lampada > 0:
 
         brilho = min(
-            abs(V) / Vmax,
+            abs(V) / Vmax_lampada,
             1
         )
 
@@ -549,10 +698,8 @@ def animar(frame):
 
         brilho = 0
 
-
     # --------------------------------------------------------
-    # Primeira graduação:
-    # cinza → amarelo
+    # Cinza → amarelo
     # --------------------------------------------------------
 
     lampada.set_facecolor(
@@ -563,22 +710,37 @@ def animar(frame):
         )
     )
 
-
     # ========================================================
     # GRÁFICO
     # ========================================================
 
     if tempo <= 2:
 
-        ponto.set_data(
+        # ---------------------------
+        # Ponto V(t)
+        # ---------------------------
+
+        ponto_V.set_data(
             [tempo],
             [V]
         )
 
+        # ---------------------------
+        # Ponto I(t)
+        # ---------------------------
+
+        ponto_I.set_data(
+            [tempo],
+            [corrente]
+        )
+
+        # ---------------------------
+        # Linha do tempo
+        # ---------------------------
+
         linha_tempo.set_xdata(
             [tempo, tempo]
         )
-
 
     # ========================================================
     # RETORNO
@@ -587,7 +749,8 @@ def animar(frame):
     return (
         bobina,
         eixo_fio,
-        ponto,
+        ponto_V,
+        ponto_I,
         linha_tempo,
         lampada
     )
