@@ -227,8 +227,8 @@ eixo_fio, = ax.plot(
 # ============================================================
 
 lampada = Circle(
-    (0, -1.7),
-    0.35,
+    (0, -2.0),
+    0.29,
     facecolor="gray",
     edgecolor="black",
     linewidth=2
@@ -238,7 +238,7 @@ ax.add_patch(lampada)
 
 ax.text(
     0,
-    -2.2,
+    -2.5,
     "Lâmpada",
     ha="center",
     fontsize=10
