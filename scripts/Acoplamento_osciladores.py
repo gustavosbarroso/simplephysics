@@ -1,8 +1,8 @@
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use("TkAgg")
 
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 
@@ -15,16 +15,11 @@ m = 1.0
 k = 2.0
 kc = 1.0
 
-x1_0 = 1.0
-x2_0 = -1.0
+x1_0 = 0.8
+x2_0 = -0.8
 
 v1_0 = 0.0
 v2_0 = 0.0
-
-
-# ============================================================
-# TEMPO
-# ============================================================
 
 t_max = 20.0
 N = 400
@@ -35,59 +30,52 @@ N = 400
 # ============================================================
 
 def f(r, t):
-
     x1, v1, x2, v2 = r
 
-    a1 = (-k*x1 + kc*(x2 - x1)) / m
-    a2 = (-k*x2 + kc*(x1 - x2)) / m
+    a1 = (-k * x1 + kc * (x2 - x1)) / m
+    a2 = (-k * x2 + kc * (x1 - x2)) / m
 
-    return np.array([
-        v1,
-        a1,
-        v2,
-        a2
-    ], float)
+    return np.array([v1, a1, v2, a2], dtype=float)
 
 
 # ============================================================
-# RK4
+# MÉTODO RK4
 # ============================================================
 
-def RK4(f, a, b, N, r):
+def RK4(func, a, b, n_steps, r0):
+    h = (b - a) / n_steps
+    tp = np.linspace(a, b, n_steps + 1)
 
-    h = (b - a) / N
+    r = np.array(r0, dtype=float)
 
-    tp = np.linspace(a, b, N + 1)
+    x1_values = np.empty(n_steps + 1)
+    v1_values = np.empty(n_steps + 1)
+    x2_values = np.empty(n_steps + 1)
+    v2_values = np.empty(n_steps + 1)
 
-    r = np.array(r, float)
+    x1_values[0], v1_values[0] = r[0], r[1]
+    x2_values[0], v2_values[0] = r[2], r[3]
 
-    x1 = [r[0]]
-    v1 = [r[1]]
-
-    x2 = [r[2]]
-    v2 = [r[3]]
-
-    for i in range(N):
-
+    for i in range(n_steps):
         t = tp[i]
 
-        k1 = h * f(r, t)
+        k1 = h * func(r, t)
+        k2 = h * func(r + 0.5 * k1, t + 0.5 * h)
+        k3 = h * func(r + 0.5 * k2, t + 0.5 * h)
+        k4 = h * func(r + k3, t + h)
 
-        k2 = h * f(r + 0.5*k1,t + 0.5*h)
+        r = r + (k1 + 2*k2 + 2*k3 + k4) / 6
 
-        k3 = h * f(r + 0.5*k2,t + 0.5*h)
+        x1_values[i + 1], v1_values[i + 1] = r[0], r[1]
+        x2_values[i + 1], v2_values[i + 1] = r[2], r[3]
 
-        k4 = h * f(r + k3,t + h)
-
-        r = r + (k1+ 2*k2+ 2*k3+ k4) / 6
-
-        x1.append(r[0])
-        v1.append(r[1])
-
-        x2.append(r[2])
-        v2.append(r[3])
-
-    return (tp,np.array(x1),np.array(v1),np.array(x2), np.array(v2))
+    return (
+        tp,
+        x1_values,
+        v1_values,
+        x2_values,
+        v2_values
+    )
 
 
 # ============================================================
@@ -95,40 +83,37 @@ def RK4(f, a, b, N, r):
 # ============================================================
 
 def solve():
+    initial_state = [x1_0, v1_0, x2_0, v2_0]
 
-    r0 = [x1_0,v1_0,x2_0,v2_0]
-
-    return RK4(f,0,t_max,N,r0)
+    return RK4(
+        f,
+        0.0,
+        t_max,
+        N,
+        initial_state
+    )
 
 
 # ============================================================
-# PRIMEIRA SIMULAÇÃO
+# SOLUÇÃO INICIAL
 # ============================================================
 
 tp, x1, v1, x2, v2 = solve()
 
 
 # ============================================================
-# ENERGIA
+# ENERGIA MECÂNICA
 # ============================================================
 
 def calcular_energia():
+    energia_cinetica = 0.5 * m * (v1**2 + v2**2)
 
-    Ec = 0.5 * m * (
-        v1**2 + v2**2
+    energia_potencial = (
+        0.5 * k * (x1**2 + x2**2)
+        + 0.5 * kc * (x2 - x1)**2
     )
 
-    Ep = (
-        0.5 * k * (
-            x1**2 + x2**2
-        )
-        +
-        0.5 * kc * (
-            x2 - x1
-        )**2
-    )
-
-    return Ec + Ep
+    return energia_cinetica + energia_potencial
 
 
 E = calcular_energia()
@@ -139,18 +124,13 @@ E = calcular_energia()
 # ============================================================
 
 def identificar_modo():
-
     if abs(x1_0 - x2_0) < 1e-2:
-
         return "Modo simétrico"
 
-    elif abs(x1_0 + x2_0) < 1e-2:
-
+    if abs(x1_0 + x2_0) < 1e-2:
         return "Modo antissimétrico"
 
-    else:
-
-        return "Batimento"
+    return "Batimento"
 
 
 modo = identificar_modo()
@@ -163,16 +143,15 @@ modo = identificar_modo()
 fig, (ax_sistema, ax_grafico) = plt.subplots(
     1,
     2,
-    figsize=(11, 5),
-    gridspec_kw={
-        'width_ratios': [1.15, 0.90]
-    }
+    figsize=(12, 6),
+    gridspec_kw={"width_ratios": [1.15, 1.0]}
 )
 
-plt.subplots_adjust(
-    left=0.23,
-    bottom=0.38,
-    right=0.95,
+fig.subplots_adjust(
+    left=0.24,
+    right=0.97,
+    top=0.90,
+    bottom=0.36,
     wspace=0.35
 )
 
@@ -181,89 +160,43 @@ plt.subplots_adjust(
 # SISTEMA FÍSICO
 # ============================================================
 
-L = 5
+L = 5.0
 
-ax_sistema.set_title(
-    "Osciladores Acoplados"
-)
-
-ax_sistema.set_xlabel(
-    "x (m)"
-)
-
+ax_sistema.set_title("Osciladores Acoplados")
+ax_sistema.set_xlabel("Posição no desenho (m)")
 ax_sistema.set_yticks([])
+ax_sistema.set_xlim(-L, L)
+ax_sistema.set_ylim(-1.0, 1.0)
+ax_sistema.grid(alpha=0.25)
 
-ax_sistema.set_xlim(
-    -L,
-    L
-)
+ax_sistema.plot([-L, -L], [-0.75, 0.75], "k", lw=3)
+ax_sistema.plot([L, L], [-0.75, 0.75], "k", lw=3)
 
-ax_sistema.set_ylim(
-    -1,
-    1
-)
+# Referências visuais, como no JavaScript
+ax_sistema.axvline(-1, color="gray", ls=":", lw=1)
+ax_sistema.axvline(+1, color="gray", ls=":", lw=1)
 
-ax_sistema.grid(
-    alpha=0.3
-)
-
-
-# ============================================================
-# PAREDES
-# ============================================================
-
-ax_sistema.plot(
-    [-L, -L],
-    [-1, 1],
-    'k',
-    lw=3
-)
-
-ax_sistema.plot(
-    [L, L],
-    [-1, 1],
-    'k',
-    lw=3
-)
-
-
-# ============================================================
-# ELEMENTOS ANIMADOS
-# ============================================================
-
-mola_esquerda, = ax_sistema.plot(
-    [],
-    [],
-    'g--',
-    lw=2
-)
-
-mola_central, = ax_sistema.plot(
-    [],
-    [],
-    'g--',
-    lw=2
-)
-
-mola_direita, = ax_sistema.plot(
-    [],
-    [],
-    'g--',
-    lw=2
-)
+mola_esquerda, = ax_sistema.plot([], [], "g-", lw=2)
+mola_central, = ax_sistema.plot([], [], "g-", lw=2)
+mola_direita, = ax_sistema.plot([], [], "g-", lw=2)
 
 massa1, = ax_sistema.plot(
-    [],
-    [],
-    'ro',
-    markersize=12
+    [], [], "ro", ms=13, mec="black"
 )
 
 massa2, = ax_sistema.plot(
-    [],
-    [],
-    'bo',
-    markersize=12
+    [], [], "bo", ms=13, mec="black"
+)
+
+label1 = ax_sistema.text(0, 0.35, "m₁", ha="center")
+label2 = ax_sistema.text(0, 0.35, "m₂", ha="center")
+
+valor1 = ax_sistema.text(
+    0, -0.35, "", ha="center", fontsize=9
+)
+
+valor2 = ax_sistema.text(
+    0, -0.35, "", ha="center", fontsize=9
 )
 
 
@@ -271,347 +204,136 @@ massa2, = ax_sistema.plot(
 # DESENHO DAS MOLAS
 # ============================================================
 
-def desenhar_mola(
-    xa,
-    xb,
-    n=12,
-    amplitude=0.08
-):
+def desenhar_mola(xa, xb, n=18, amplitude=0.09):
+    if abs(xb - xa) < 1e-9:
+        return np.array([xa, xb]), np.array([0.0, 0.0])
 
-    xs = np.linspace(
-        xa,
-        xb,
-        n + 1
-    )
-
-    ys = np.zeros(
-        n + 1
-    )
+    xs = np.linspace(xa, xb, n + 1)
+    ys = np.zeros(n + 1)
 
     for j in range(1, n):
-
-        if j % 2 == 1:
-            ys[j] = amplitude
-
-        else:
-            ys[j] = -amplitude
+        ys[j] = amplitude if j % 2 else -amplitude
 
     return xs, ys
 
 
 # ============================================================
-# GRÁFICO x(t)
+# GRÁFICO DAS POSIÇÕES
 # ============================================================
 
-ax_grafico.set_xlim(
-    0,
-    tp[-1]
-)
-
-ax_grafico.set_title(
-    "Posições ao longo do tempo"
-)
-
-ax_grafico.set_xlabel(
-    "t (s)"
-)
-
-ax_grafico.set_ylabel(
-    "x (m)"
-)
+ax_grafico.set_title("Posições ao longo do tempo")
+ax_grafico.set_xlabel("t (s)")
+ax_grafico.set_ylabel("x (m)")
+ax_grafico.set_xlim(0, t_max)
+ax_grafico.grid(alpha=0.3)
 
 line_x1, = ax_grafico.plot(
-    [],
-    [],
-    'r-',
-    label="x₁ (m)"
+    [], [], "r-", lw=1.8, label="x₁(t)"
 )
 
 line_x2, = ax_grafico.plot(
-    [],
-    [],
-    'b-',
-    label="x₂ (m)"
+    [], [], "b-", lw=1.8, label="x₂(t)"
 )
 
-ponto_x1, = ax_grafico.plot(
-    [],
-    [],
-    'ro'
-)
+ponto_x1, = ax_grafico.plot([], [], "ro", ms=4)
+ponto_x2, = ax_grafico.plot([], [], "bo", ms=4)
 
-ponto_x2, = ax_grafico.plot(
-    [],
-    [],
-    'bo'
-)
-
-ax_grafico.grid(
-    alpha=0.3
-)
-
-ax_grafico.legend()
+ax_grafico.legend(loc="upper right")
 
 
 # ============================================================
-# ESCALA DINÂMICA DO GRÁFICO
-# ============================================================
-
-def update_axes_plot(i):
-
-    if i < 5:
-        return
-
-    ymin = min(
-        np.min(x1[:i]),
-        np.min(x2[:i])
-    )
-
-    ymax = max(
-        np.max(x1[:i]),
-        np.max(x2[:i])
-    )
-
-    if abs(ymax - ymin) < 1e-8:
-
-        ymax += 1
-        ymin -= 1
-
-    margem = 0.2 * (
-        ymax - ymin
-    )
-
-    ax_grafico.set_ylim(
-        ymin - margem,
-        ymax + margem
-    )
-
-
-# ============================================================
-# HUD
+# PAINEL DE INFORMAÇÕES
 # ============================================================
 
 text_info = fig.text(
-    0.02,
-    0.72,
+    0.025,
+    0.83,
     "",
-    fontsize=10,
-    bbox=dict(
-        boxstyle="round",
-        facecolor="white",
-        alpha=0.8
-    )
+    fontsize=9,
+    va="top",
+    bbox={
+        "boxstyle": "round,pad=0.5",
+        "facecolor": "white",
+        "alpha": 0.9
+    }
 )
 
 
 # ============================================================
-# INIT
-# ============================================================
-
-def init():
-
-    X1 = -1 + x1[0]
-    X2 = 1 + x2[0]
-
-
-    # ----------------------------------------
-    # MOLA ESQUERDA
-    # ----------------------------------------
-
-    xs, ys = desenhar_mola(
-        -L,
-        X1
-    )
-
-    mola_esquerda.set_data(
-        xs,
-        ys
-    )
-
-
-    # ----------------------------------------
-    # MOLA CENTRAL
-    # ----------------------------------------
-
-    xs, ys = desenhar_mola(
-        X1,
-        X2
-    )
-
-    mola_central.set_data(
-        xs,
-        ys
-    )
-
-
-    # ----------------------------------------
-    # MOLA DIREITA
-    # ----------------------------------------
-
-    xs, ys = desenhar_mola(
-        X2,
-        L
-    )
-
-    mola_direita.set_data(
-        xs,
-        ys
-    )
-
-
-    # ----------------------------------------
-    # MASSAS
-    # ----------------------------------------
-
-    massa1.set_data(
-        [X1],
-        [0]
-    )
-
-    massa2.set_data(
-        [X2],
-        [0]
-    )
-
-
-    return (
-        mola_esquerda,
-        mola_central,
-        mola_direita,
-        massa1,
-        massa2
-    )
-
-
-# ============================================================
-# UPDATE DA ANIMAÇÃO
+# ATUALIZAÇÃO DA ANIMAÇÃO
 # ============================================================
 
 def update(frame):
+    i = int(frame)
 
-    i = frame
+    # Posições visuais: iguais à transformação do JavaScript.
+    # x1 e x2 continuam sendo as coordenadas usadas na física.
+    X1 = -1.0 + x1[i]
+    X2 = +1.0 + x2[i]
 
+    # Mola esquerda
+    xs, ys = desenhar_mola(-L, X1)
+    mola_esquerda.set_data(xs, ys)
 
-    # ========================================================
-    # POSIÇÕES
-    # ========================================================
+    # Mola central
+    xs, ys = desenhar_mola(X1, X2)
+    mola_central.set_data(xs, ys)
 
-    X1 = -1 + x1[i]
-    X2 = 1 + x2[i]
+    # Mola direita
+    xs, ys = desenhar_mola(X2, L)
+    mola_direita.set_data(xs, ys)
 
+    # Massas
+    massa1.set_data([X1], [0])
+    massa2.set_data([X2], [0])
 
-    # ========================================================
-    # MOLA ESQUERDA
-    # ========================================================
+    label1.set_position((X1, 0.30))
+    label2.set_position((X2, 0.30))
 
-    xs, ys = desenhar_mola(
-        -L,
-        X1
+    valor1.set_position((X1, -0.30))
+    valor2.set_position((X2, -0.30))
+
+    valor1.set_text(f"{x1[i]:.2f} m")
+    valor2.set_text(f"{x2[i]:.2f} m")
+
+    # Gráfico
+    line_x1.set_data(tp[:i + 1], x1[:i + 1])
+    line_x2.set_data(tp[:i + 1], x2[:i + 1])
+
+    ponto_x1.set_data([tp[i]], [x1[i]])
+    ponto_x2.set_data([tp[i]], [x2[i]])
+
+    # Escala vertical dinâmica
+    ymin = min(
+        float(np.min(x1[:i + 1])),
+        float(np.min(x2[:i + 1]))
     )
 
-    mola_esquerda.set_data(
-        xs,
-        ys
+    ymax = max(
+        float(np.max(x1[:i + 1])),
+        float(np.max(x2[:i + 1]))
     )
 
+    if abs(ymax - ymin) < 1e-8:
+        ymin -= 1.0
+        ymax += 1.0
+    else:
+        margem = 0.15 * (ymax - ymin)
+        ymin -= margem
+        ymax += margem
 
-    # ========================================================
-    # MOLA CENTRAL
-    # ========================================================
+    ax_grafico.set_ylim(ymin, ymax)
 
-    xs, ys = desenhar_mola(
-        X1,
-        X2
-    )
-
-    mola_central.set_data(
-        xs,
-        ys
-    )
-
-
-    # ========================================================
-    # MOLA DIREITA
-    # ========================================================
-
-    xs, ys = desenhar_mola(
-        X2,
-        L
-    )
-
-    mola_direita.set_data(
-        xs,
-        ys
-    )
-
-
-    # ========================================================
-    # MASSAS
-    # ========================================================
-
-    massa1.set_data(
-        [X1],
-        [0]
-    )
-
-    massa2.set_data(
-        [X2],
-        [0]
-    )
-
-
-    # ========================================================
-    # GRÁFICO
-    # ========================================================
-
-    line_x1.set_data(
-        tp[:i],
-        x1[:i]
-    )
-
-    line_x2.set_data(
-        tp[:i],
-        x2[:i]
-    )
-
-    ponto_x1.set_data(
-        [tp[i]],
-        [x1[i]]
-    )
-
-    ponto_x2.set_data(
-        [tp[i]],
-        [x2[i]]
-    )
-
-    update_axes_plot(i)
-
-
-    # ========================================================
-    # HUD
-    # ========================================================
-
-    texto = (
-        f"m = {m:.2f} kg\n"
-        f"k = {k:.2f} N/m\n"
+    # Informações
+    text_info.set_text(
+        f"m = {m:.2f} kg       k = {k:.2f} N/m\n"
         f"kc = {kc:.2f} N/m\n\n"
-
-        f"x₁ = {x1[i]:.3f} m\n"
-        f"x₂ = {x2[i]:.3f} m\n\n"
-
-        f"v₁ = {v1[i]:.3f} m/s\n"
-        f"v₂ = {v2[i]:.3f} m/s\n\n"
-
-        f"E = {E[i]:.3f} J\n\n"
-
+        f"x₁ = {x1[i]:.3f} m     x₂ = {x2[i]:.3f} m\n"
+        f"v₁ = {v1[i]:.3f} m/s   v₂ = {v2[i]:.3f} m/s\n"
+        f"E = {E[i]:.3f} J\n"
         f"t = {tp[i]:.2f} s\n"
         f"{modo}"
     )
-
-    text_info.set_text(
-        texto
-    )
-
 
     return (
         mola_esquerda,
@@ -619,12 +341,100 @@ def update(frame):
         mola_direita,
         massa1,
         massa2,
+        label1,
+        label2,
+        valor1,
+        valor2,
         line_x1,
         line_x2,
         ponto_x1,
         ponto_x2,
         text_info
     )
+
+
+def init():
+    return update(0)
+
+
+# ============================================================
+# SLIDERS
+# ============================================================
+
+slider_axes = [
+    fig.add_axes([0.27, 0.265, 0.64, 0.025]),
+    fig.add_axes([0.27, 0.215, 0.64, 0.025]),
+    fig.add_axes([0.27, 0.165, 0.64, 0.025]),
+    fig.add_axes([0.27, 0.115, 0.64, 0.025]),
+    fig.add_axes([0.27, 0.065, 0.64, 0.025])
+]
+
+slider_m = Slider(
+    slider_axes[0], "m (kg)",
+    0.5, 5.0, valinit=m, valstep=0.1
+)
+
+slider_k = Slider(
+    slider_axes[1], "k (N/m)",
+    0.5, 10.0, valinit=k, valstep=0.1
+)
+
+slider_kc = Slider(
+    slider_axes[2], "kc (N/m)",
+    0.1, 10.0, valinit=kc, valstep=0.1
+)
+
+slider_x1 = Slider(
+    slider_axes[3], "x₁₀ (m)",
+    -1.0, 1.0, valinit=x1_0, valstep=0.1
+)
+
+slider_x2 = Slider(
+    slider_axes[4], "x₂₀ (m)",
+    -1.0, 1.0, valinit=x2_0, valstep=0.1
+)
+
+
+# ============================================================
+# ATUALIZAÇÃO DOS SLIDERS
+# ============================================================
+
+def update_sliders(_):
+    global m, k, kc, x1_0, x2_0
+    global tp, x1, v1, x2, v2, E, modo
+
+    m = float(slider_m.val)
+    k = float(slider_k.val)
+    kc = float(slider_kc.val)
+
+    x1_0 = float(slider_x1.val)
+    x2_0 = float(slider_x2.val)
+
+    # Recalcula a solução com os valores novos
+    tp, x1, v1, x2, v2 = solve()
+
+    E = calcular_energia()
+    modo = identificar_modo()
+
+    ax_grafico.set_xlim(tp[0], tp[-1])
+
+    ani.event_source.stop()
+    ani.frame_seq = ani.new_frame_seq()
+
+    update(0)
+    fig.canvas.draw_idle()
+
+    ani.event_source.start()
+
+
+for slider in (
+    slider_m,
+    slider_k,
+    slider_kc,
+    slider_x1,
+    slider_x2
+):
+    slider.on_changed(update_sliders)
 
 
 # ============================================================
@@ -638,204 +448,13 @@ ani = FuncAnimation(
     init_func=init,
     interval=20,
     blit=False,
-    repeat=True
+    repeat=True,
+    cache_frame_data=False
 )
 
 
 # ============================================================
-# SLIDERS
-# ============================================================
-
-ax_m = plt.axes(
-    [0.25, 0.25, 0.65, 0.03]
-)
-
-ax_k = plt.axes(
-    [0.25, 0.20, 0.65, 0.03]
-)
-
-ax_kc = plt.axes(
-    [0.25, 0.15, 0.65, 0.03]
-)
-
-ax_x1 = plt.axes(
-    [0.25, 0.10, 0.65, 0.03]
-)
-
-ax_x2 = plt.axes(
-    [0.25, 0.05, 0.65, 0.03]
-)
-
-
-# ============================================================
-# SLIDER m
-# ============================================================
-
-slider_m = Slider(
-    ax_m,
-    'm (kg)',
-    0.5,
-    5.0,
-    valinit=m,
-    valstep=0.1
-)
-
-
-# ============================================================
-# SLIDER k
-# ============================================================
-
-slider_k = Slider(
-    ax_k,
-    'k (N/m)',
-    0.5,
-    10.0,
-    valinit=k,
-    valstep=0.1
-)
-
-
-# ============================================================
-# SLIDER kc
-# ============================================================
-
-slider_kc = Slider(
-    ax_kc,
-    'kc (N/m)',
-    0.1,
-    10.0,
-    valinit=kc,
-    valstep=0.1
-)
-
-
-# ============================================================
-# SLIDER x1
-# ============================================================
-
-slider_x1 = Slider(
-    ax_x1,
-    'x₁₀ (m)',
-    -2.0,
-    2.0,
-    valinit=x1_0,
-    valstep=0.1
-)
-
-
-# ============================================================
-# SLIDER x2
-# ============================================================
-
-slider_x2 = Slider(
-    ax_x2,
-    'x₂₀ (m)',
-    -2.0,
-    2.0,
-    valinit=x2_0,
-    valstep=0.1
-)
-
-
-# ============================================================
-# ATUALIZAÇÃO DOS SLIDERS
-# ============================================================
-
-def update_sliders(val):
-
-    global m, k, kc
-    global x1_0, x2_0
-
-    global tp, x1, v1
-    global x2, v2
-
-    global E, modo
-
-
-    # --------------------------------------------------------
-    # NOVOS PARÂMETROS
-    # --------------------------------------------------------
-
-    m = slider_m.val
-    k = slider_k.val
-    kc = slider_kc.val
-
-    x1_0 = slider_x1.val
-    x2_0 = slider_x2.val
-
-
-    # --------------------------------------------------------
-    # NOVA SOLUÇÃO
-    # --------------------------------------------------------
-
-    tp, x1, v1, x2, v2 = solve()
-
-
-    # --------------------------------------------------------
-    # NOVA ENERGIA
-    # --------------------------------------------------------
-
-    E = calcular_energia()
-
-
-    # --------------------------------------------------------
-    # NOVO MODO
-    # --------------------------------------------------------
-
-    modo = identificar_modo()
-
-
-    # --------------------------------------------------------
-    # EIXO DO TEMPO
-    # --------------------------------------------------------
-
-    ax_grafico.set_xlim(
-        0,
-        tp[-1]
-    )
-
-
-    # --------------------------------------------------------
-    # REINICIA ANIMAÇÃO
-    # --------------------------------------------------------
-
-    ani.event_source.stop()
-
-    ani.frame_seq = ani.new_frame_seq()
-
-    ani.event_source.start()
-
-
-    fig.canvas.draw_idle()
-
-
-# ============================================================
-# CONECTA OS SLIDERS
-# ============================================================
-
-slider_m.on_changed(
-    update_sliders
-)
-
-slider_k.on_changed(
-    update_sliders
-)
-
-slider_kc.on_changed(
-    update_sliders
-)
-
-slider_x1.on_changed(
-    update_sliders
-)
-
-slider_x2.on_changed(
-    update_sliders
-)
-
-
-# ============================================================
-# MOSTRA
+# MOSTRAR
 # ============================================================
 
 plt.show()
