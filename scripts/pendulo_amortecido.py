@@ -106,7 +106,7 @@ line, = ax_pend.plot([], [], 'o-', lw=2)
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("θ(t) [rad]")
+ax_plot.set_ylabel("θ(t) [rad] e ω(t) [rad/s]")
 
 line_th, = ax_plot.plot([], [], label="θ(t) [rad]")
 
@@ -210,11 +210,11 @@ slider_b = Slider(
 )
 slider_theta0 = Slider(
     ax_theta0, 'θ₀ [rad]',
-    -np.pi, np.pi, valinit=params["theta0"]
+    -np.pi/2, np.pi/2, valinit=params["theta0"]
 )
 slider_omega0 = Slider(
     ax_omega0, 'ω₀ [rad/s]',
-    -10, 10, valinit=params["omega0"]
+    -2, 2, valinit=params["omega0"]
 )
 
 # ---------------------------
