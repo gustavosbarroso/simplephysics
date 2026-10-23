@@ -44,8 +44,8 @@ def RK4(f, a, b_int, N, r, params):
 
     th, om = [r[0]], [r[1]]
 
-    for i in range(N):
-        t = tp[i]
+    for k in range(N):
+        t = tp[k]
 
         k1 = h * f(r, t, params)
         k2 = h * f(r + 0.5*k1, t + 0.5*h, params)
@@ -106,13 +106,14 @@ line, = ax_pend.plot([], [], 'o-', lw=2)
 ax_plot.set_xlim(0, tp[-1])
 ax_plot.set_title("Evolução temporal")
 ax_plot.set_xlabel("t [s]")
-ax_plot.set_ylabel("θ(t) [rad] e ω(t) [rad/s]")
+ax_plot.set_ylabel("θ(t) [rad]")
 
 line_th, = ax_plot.plot([], [], label="θ(t) [rad]")
 
 ax_plot2 = ax_plot.twinx()
-ax_plot2.set_ylabel("ω(t) [rad/s]")
-line_om, = ax_plot2.plot([], [], color='orange', label="ω(t) [rad/s]")
+line_om, = ax_plot.plot(
+    [], [], color='orange', label="ω(t) [rad/s]"
+)
 
 lines = [line_th, line_om]
 labels = [l.get_label() for l in lines]
@@ -133,7 +134,10 @@ text_info = fig.text(
 # ---------------------------
 def init():
     line.set_data([0, x[0]], [0, y[0]])
-    return line,
+    line_th.set_data([], [])
+    line_om.set_data([], [])
+
+    return line, line_th, line_om, text_info
 
 # ---------------------------
 # UPDATE
@@ -141,14 +145,24 @@ def init():
 def update(frame):
     i = frame
 
+    # Pêndulo
     line.set_data([0, x[i]], [0, y[i]])
-    line_th.set_data(tp[:i], th[:i])
-    line_om.set_data(tp[:i], om[:i])
 
+    # Histórico das grandezas
+    line_th.set_data(tp[:i+1], th[:i+1])
+    line_om.set_data(tp[:i+1], om[:i+1])
+
+    # Escala vertical dinâmica, como no RLC
     if i > 5:
-        ax_plot.set_ylim(np.min(th[:i])*1.2, np.max(th[:i])*1.2)
-        ax_plot2.set_ylim(np.min(om[:i])*1.2, np.max(om[:i])*1.2)
+        ymax = max(
+            np.max(np.abs(th[:i + 1])),
+            np.max(np.abs(om[:i + 1])),
+            1e-3
+        )
 
+        ax_plot.set_ylim(-1.2 * ymax, 1.2 * ymax)
+
+    # HUD
     texto = (
         f"L = {params['L']:.2f} m\n"
         f"g = {params['g']:.2f} m/s²\n"
@@ -168,7 +182,8 @@ ani = FuncAnimation(
     update,
     frames=len(tp),
     init_func=init,
-    interval=20
+    interval=20,
+    blit=False
 )
 
 # ---------------------------
@@ -181,23 +196,25 @@ ax_b = plt.axes([0.25, 0.15, 0.65, 0.03])
 ax_theta0 = plt.axes([0.25, 0.10, 0.65, 0.03])
 ax_omega0 = plt.axes([0.25, 0.05, 0.65, 0.03])
 
-slider_g = Slider(ax_g, 'g [m/s²]', 1, 20, valinit=params["g"])
-slider_L = Slider(ax_L, 'L [m]', 0.1, 5, valinit=params["L"])
-slider_m = Slider(ax_m, 'm [kg]', 0.1, 10, valinit=params["m"])
-slider_b = Slider(ax_b, 'b [kg/s]', 0, 50, valinit=params["b"])
+slider_g = Slider(
+    ax_g, 'g [m/s²]', 1, 20, valinit=params["g"]
+)
+slider_L = Slider(
+    ax_L, 'L [m]', 0.1, 5, valinit=params["L"]
+)
+slider_m = Slider(
+    ax_m, 'm [kg]', 0.1, 10, valinit=params["m"]
+)
+slider_b = Slider(
+    ax_b, 'b [kg/s]', 0, 50, valinit=params["b"]
+)
 slider_theta0 = Slider(
-    ax_theta0,
-    'θ₀ [rad]',
-    -np.pi,
-    np.pi,
-    valinit=params["theta0"]
+    ax_theta0, 'θ₀ [rad]',
+    -np.pi, np.pi, valinit=params["theta0"]
 )
 slider_omega0 = Slider(
-    ax_omega0,
-    'ω₀ [rad/s]',
-    -10,
-    10,
-    valinit=params["omega0"]
+    ax_omega0, 'ω₀ [rad/s]',
+    -10, 10, valinit=params["omega0"]
 )
 
 # ---------------------------
@@ -216,6 +233,10 @@ def update_sliders(val):
     tp, th, om, x, y = solve(params)
 
     update_pendulum_axis()
+
+    # Reinicia a escala para a nova solução
+    ax_plot.set_ylim(-1, 1)
+    ax_plot2.set_ylim(-1, 1)
 
     ani.event_source.stop()
     ani.frame_seq = ani.new_frame_seq()
