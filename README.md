@@ -240,6 +240,30 @@ Emission occurs only when f > f꜀ and the light intensity is greater than zero.
 
 The electron trajectories and velocities are illustrative visual representations.
 
+XVII. ELASTIC PENDULUM (COUPLED NONLINEAR SYSTEM)
+
+A coupled pendulum-spring system combining angular oscillation and radial deformation. The model describes the nonlinear interaction between rotational and spring motion.
+
+Equations of motion:
+
+θ' = ω
+
+ω' = −[g/(l₀ + x)] sin(θ) − [2ωvₓ/(l₀ + x)]
+
+x' = vₓ
+
+vₓ' = (l₀ + x)ω² − (k/m)x + g cos(θ)
+
+Where θ is the angular displacement, x is the spring deformation, l₀ is the natural spring length, k is the spring constant, and m is the attached mass.
+
+The simulation uses fourth-order Runge–Kutta (RK4) integration and interactive sliders to explore the coupled angular and radial dynamics.
+
+Run:
+
+```bash
+python scripts/pendulo_elastico.py
+```
+
 🧲 FIELD SIMULATION STRUCTURE
 
 fields_scripts/
