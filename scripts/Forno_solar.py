@@ -19,30 +19,28 @@ from matplotlib import cm, colors
 
 sigma = 5.670374419e-8
 
-m1 = 0.243
 c1 = 900
 
 tau = 0.95
-A1 = 0.0660
-alpha = 0.90
 kappa = 1.0
-
-G = 1362
 
 epsilon = 0.90
 h_conv = 2.0
+
+params = {
+    "T0": 293.15,
+    "G": 1362,
+    "m": 0.243,
+    "alpha": 0.90,
+    "A": 0.0660,
+    "t_max": 4*3600,
+    "N": 1000
+}
 
 
 # ============================================================
 # 2. PARÂMETROS DA SIMULAÇÃO
 # ============================================================
-
-params = {
-    "T0": 293.15,
-    "G": 1362,
-    "t_max": 4*3600,
-    "N": 1000
-}
 
 a = 0
 b = params["t_max"]
@@ -58,12 +56,10 @@ tpontos = np.arange(a, b, h)
 # ============================================================
 
 def Tamb(t):
-
     return 293.15 + 5*np.sin(2*np.pi*t/86400)
 
 
 def phi(t):
-
     return np.pi/6
 
 
@@ -73,13 +69,28 @@ def phi(t):
 
 def f(T, t):
 
-    termo_solar = (tau*A1*alpha*kappa*G*np.cos(phi(t)))
+    m = params["m"]
+    A = params["A"]
+    alpha = params["alpha"]
+    G = params["G"]
 
-    termo_radiacao = (-tau*epsilon*A1*sigma*(T**4 - Tamb(t)**4))
+    termo_solar = (
+        tau*A*alpha*kappa*G*np.cos(phi(t))
+    )
 
-    termo_conveccao = (h_conv*A1*(Tamb(t) - T))
+    termo_radiacao = (
+        -tau*epsilon*A*sigma*(T**4 - Tamb(t)**4)
+    )
 
-    dTdt = (termo_solar +termo_radiacao + termo_conveccao)/(m1*c1)
+    termo_conveccao = (
+        h_conv*A*(Tamb(t) - T)
+    )
+
+    dTdt = (
+        termo_solar +
+        termo_radiacao +
+        termo_conveccao
+    )/(m*c1)
 
     return dTdt
 
@@ -134,21 +145,12 @@ norm = colors.Normalize(
 # 7. GEOMETRIA DO REFLETOR PARABÓLICO
 # ============================================================
 
-# Direção do eixo óptico
-
 n = np.array([0.35, 0.936])
-
 n = n/np.linalg.norm(n)
-
-# Direção perpendicular
 
 v = np.array([-n[1], n[0]])
 
-# Distância focal
-
 focal = 1.15
-
-# Coordenadas da parábola
 
 u = np.linspace(-1.45, 1.45, 200)
 
@@ -158,8 +160,6 @@ parabola = (
 )
 
 focus = focal*n
-
-# Ponto de incidência dos raios
 
 u_raios = np.linspace(-1.2, 1.2, 7)
 
@@ -183,14 +183,14 @@ pontos_impacto = np.array(pontos_impacto)
 
 fig, (ax_forno, ax_grafico) = plt.subplots(
     1, 2,
-    figsize=(14, 7)
+    figsize=(14, 8)
 )
 
 plt.subplots_adjust(
     left=0.07,
     right=0.96,
     top=0.87,
-    bottom=0.25,
+    bottom=0.36,
     wspace=0.30
 )
 
@@ -232,8 +232,6 @@ sol = Circle(
 
 ax_forno.add_patch(sol)
 
-# Halo solar
-
 halo = Circle(
     (2.15, 3.55),
     0.50,
@@ -258,8 +256,6 @@ refletor, = ax_forno.plot(
     solid_capstyle="round",
     zorder=2
 )
-
-# Superfície refletora
 
 ax_forno.plot(
     parabola[:, 0],
@@ -309,16 +305,11 @@ ax_forno.add_patch(base)
 # ============================================================
 
 raios = []
-
 particulas = []
 
 for i, ponto in enumerate(pontos_impacto):
 
-    # Ponto de origem do raio
-
     inicio = ponto + 2.5*n
-
-    # Trajetória incidente
 
     ax_forno.plot(
         [inicio[0], ponto[0]],
@@ -329,8 +320,6 @@ for i, ponto in enumerate(pontos_impacto):
         zorder=2
     )
 
-    # Trajetória refletida
-
     ax_forno.plot(
         [ponto[0], focus[0]],
         [ponto[1], focus[1]],
@@ -339,8 +328,6 @@ for i, ponto in enumerate(pontos_impacto):
         alpha=0.65,
         zorder=4
     )
-
-    # Vetor da trajetória completa
 
     caminho = np.array([
         inicio,
@@ -377,8 +364,6 @@ for i, ponto in enumerate(pontos_impacto):
 # 11. PANELA
 # ============================================================
 
-# Corpo da panela
-
 panela = Polygon(
     [
         [focus[0]-0.43, focus[1]-0.65],
@@ -395,8 +380,6 @@ panela = Polygon(
 
 ax_forno.add_patch(panela)
 
-# Tampa / abertura superior
-
 tampa = Ellipse(
     (focus[0], focus[1]-0.05),
     0.68,
@@ -408,8 +391,6 @@ tampa = Ellipse(
 )
 
 ax_forno.add_patch(tampa)
-
-# Alças
 
 for sinal in [-1, 1]:
 
@@ -432,8 +413,6 @@ for sinal in [-1, 1]:
 # ============================================================
 # 12. TERMÔMETRO
 # ============================================================
-
-# Corpo
 
 ax_forno.add_patch(
     Rectangle(
@@ -500,8 +479,6 @@ texto_amb = ax_forno.text(
     fontsize=10,
     color="gray"
 )
-
-# Vapor
 
 vapor = []
 
@@ -622,9 +599,7 @@ def update(frame):
 
     cor = cmap(norm(temperatura_C))
 
-    # --------------------------------------------------------
     # PANELA
-    # --------------------------------------------------------
 
     panela.set_facecolor(cor)
 
@@ -638,9 +613,7 @@ def update(frame):
         f"Ambiente: {temperatura_amb:.1f} °C"
     )
 
-    # --------------------------------------------------------
     # TERMÔMETRO
-    # --------------------------------------------------------
 
     altura = np.clip(
         (temperatura_C-temperatura_amb)/
@@ -651,9 +624,7 @@ def update(frame):
 
     termometro.set_height(1.85*altura)
 
-    # --------------------------------------------------------
     # MOVIMENTO DOS RAIOS
-    # --------------------------------------------------------
 
     for i, raio in enumerate(raios):
 
@@ -693,9 +664,7 @@ def update(frame):
             [posicao[1]]
         )
 
-    # --------------------------------------------------------
     # VAPOR
-    # --------------------------------------------------------
 
     intensidade = np.clip(
         (temperatura_C-70)/40,
@@ -722,13 +691,9 @@ def update(frame):
 
         linha.set_data(x, y)
 
-        linha.set_alpha(
-            intensidade*0.55
-        )
+        linha.set_alpha(intensidade*0.55)
 
-    # --------------------------------------------------------
     # GRÁFICO
-    # --------------------------------------------------------
 
     linha_temp.set_data(
         tpontos[:indice+1]/3600,
@@ -740,9 +705,7 @@ def update(frame):
         [temperatura_C]
     )
 
-    # --------------------------------------------------------
     # HUD
-    # --------------------------------------------------------
 
     hud.set_text(
         f"Tempo: {tempo/3600:.2f} h     "
@@ -767,9 +730,12 @@ def update(frame):
 # 18. SLIDERS
 # ============================================================
 
-ax_T0 = plt.axes([0.18, 0.15, 0.65, 0.025])
+ax_T0 = plt.axes([0.18, 0.29, 0.65, 0.022])
+ax_G = plt.axes([0.18, 0.245, 0.65, 0.022])
 
-ax_G = plt.axes([0.18, 0.09, 0.65, 0.025])
+ax_m = plt.axes([0.18, 0.20, 0.65, 0.022])
+ax_alpha = plt.axes([0.18, 0.155, 0.65, 0.022])
+ax_A = plt.axes([0.18, 0.11, 0.65, 0.022])
 
 
 slider_T0 = Slider(
@@ -790,6 +756,33 @@ slider_G = Slider(
     valstep=10
 )
 
+slider_m = Slider(
+    ax_m,
+    "Massa m (kg)",
+    0.05,
+    1.0,
+    valinit=params["m"],
+    valstep=0.005
+)
+
+slider_alpha = Slider(
+    ax_alpha,
+    "Absorvidade α",
+    0.0,
+    1.0,
+    valinit=params["alpha"],
+    valstep=0.01
+)
+
+slider_A = Slider(
+    ax_A,
+    "Área A (m²)",
+    0.01,
+    0.15,
+    valinit=params["A"],
+    valstep=0.001
+)
+
 
 # ============================================================
 # 19. REINICIALIZAÇÃO
@@ -797,20 +790,18 @@ slider_G = Slider(
 
 def atualizar(val):
 
-    global G
-
-    params["T0"] = slider_T0.val+273.15
-
+    params["T0"] = slider_T0.val + 273.15
     params["G"] = slider_G.val
 
-    G = params["G"]
+    params["m"] = slider_m.val
+    params["alpha"] = slider_alpha.val
+    params["A"] = slider_A.val
 
-    # Recalcula a solução usando o mesmo RK4
+    # Recalcula a solução usando RK4
 
     novo_T, novo_T_C = calcular_temperatura()
 
     estado["T"] = novo_T
-
     estado["T_C"] = novo_T_C
 
     # Atualiza limites do gráfico
@@ -820,7 +811,7 @@ def atualizar(val):
         max(120, np.max(novo_T_C)+10)
     )
 
-    # Reinicia a animação
+    # Reinicia animação
 
     ani.event_source.stop()
 
@@ -834,8 +825,11 @@ def atualizar(val):
 
 
 slider_T0.on_changed(atualizar)
-
 slider_G.on_changed(atualizar)
+
+slider_m.on_changed(atualizar)
+slider_alpha.on_changed(atualizar)
+slider_A.on_changed(atualizar)
 
 
 # ============================================================
@@ -852,4 +846,3 @@ ani = FuncAnimation(
 )
 
 plt.show()
-
